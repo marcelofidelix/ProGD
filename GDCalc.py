@@ -107,9 +107,8 @@ combo_grafico = [
 
 #Definição do layout do app
 app.layout = html.Div([
-
-    html.Div([
     
+    html.Div([
     html.H2('GDCalc'),
 
     html.H4('Modelo'),
@@ -119,6 +118,10 @@ app.layout = html.Div([
     options=combo_modelos_valores,
     value='American 5750R 90ft'
     ),
+
+    ],style={'width': '45%', 'display': 'inline-block'}),
+
+    html.Div([
 
     html.Div(
     
@@ -306,7 +309,7 @@ app.layout = html.Div([
 
     html.Div(id='mostra_modelo')
     ],
-        style={'width': '60%', 'display': 'inline-block'}),
+        style={'width': '100%', 'display': 'inline-block','columnCount': 2}),
 ])
 
 @app.callback(
@@ -587,11 +590,12 @@ def mostra_modelo(
             figure={
                 'data':[
                     go.Scatter(
+                            #name='Otimizado',
                             x=eixo_x,
                             y=eixo_y[combo_param],
                             text='Textoo',
                             mode='markers+lines'
-                        )
+                        ),
                 ],
                 'layout':go.Layout(
                         title=combo_param[10:]+' - '+combo_modelos,
