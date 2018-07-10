@@ -159,7 +159,7 @@ app.layout = html.Div([
         value=100,
     ),
 
-    html.Div('Compressão da Lança'),
+    html.Div('Comp. da Lança'),
 
     dcc.Slider(
         id='slider_penEcl',
@@ -191,7 +191,7 @@ app.layout = html.Div([
         value=100,
     ),
 
-    html.Div('Hastes tras. do cavalete'),
+    html.Div('Hastes tras. do cav.'),
 
     dcc.Slider(
         id='slider_penFht',
@@ -207,7 +207,7 @@ app.layout = html.Div([
         value=100,
     ),
 
-    html.Div('Hastes dian. do cavalete'),
+    html.Div('Hastes dian. do cav.'),
 
     dcc.Slider(
         id='slider_penFhd',
@@ -292,6 +292,9 @@ app.layout = html.Div([
         labelStyle={'display': 'inline-block'}
     ),
 
+    ],
+        style={'width': '100%', 'display': 'inline-block','columnCount': 2}),
+
     html.H4('Parâmetros de saída'),
 
     dcc.Dropdown(
@@ -308,8 +311,7 @@ app.layout = html.Div([
     ),
 
     html.Div(id='mostra_modelo')
-    ],
-        style={'width': '100%', 'display': 'inline-block','columnCount': 2}),
+
 ])
 
 @app.callback(
@@ -579,12 +581,15 @@ def mostra_modelo(
 
     eixo_x = teta
     label_x = 'Ângulo da Lança (°)'
+
     if (combo_ang_raio == 'Raio(m)'):
         eixo_x = r
         label_x = 'Raio (m)'
     
     df.loc[combo_modelos]['[Gráfico] Raio'] = ast.literal_eval(df.loc[combo_modelos]['teta'])
+
     if combo_param[:9] == '[Gráfico]':
+
         return dcc.Graph(
             id='grafico_tabela',
             figure={
