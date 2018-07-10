@@ -28,12 +28,18 @@ lista_param = ['[Gráfico] Ângulo alfa',
 '[Gráfico] Capacidade Estática',
 '[Gráfico] Raio',
 '[Gráfico] Cabo do sistema principal',
+'[Gráfico] Cabo do sistema principal Orig. x Otim.',
 '[Gráfico] Cabo de lança',
+'[Gráfico] Cabo de lança Orig. x Otim.',
 '[Gráfico] cvon',
+'[Gráfico] Esforço nas hastes traseiras do cav. Orig. x Otim.',
 '[Gráfico] Esforço nas hastes traseiras do cav.',
+'[Gráfico] Esforço nas hastes dianteiras do cav. Orig. x Otim.',
 '[Gráfico] Esforço nas hastes dianteiras do cav.',
+'[Gráfico] Momento Orig. x Otim.',
 '[Gráfico] Momento',
 '[Gráfico] Sustentação da lança',
+'[Gráfico] Sustentação da lança Orig. x Otim.',
 '[Gráfico] alfacl',
 '[Gráfico] Rpx',
 '[Gráfico] Rpy',         
@@ -576,7 +582,13 @@ def mostra_modelo(
         '[Gráfico] Rpx':Rpx,         
         '[Gráfico] Rpy':Rpy,         
         '[Gráfico] gama_teta':gama_teta,
-        '[Gráfico] alfacl':degrees(alfacl)
+        '[Gráfico] alfacl':degrees(alfacl),
+        '[Gráfico] Cabo do sistema principal Orig. x Otim.':Tcgot,
+        '[Gráfico] Cabo de lança Orig. x Otim.':Tclot*FLFl,
+        '[Gráfico] Sustentação da lança Orig. x Otim.':Tclot,
+        '[Gráfico] Momento Orig. x Otim.':Momot,
+        '[Gráfico] Esforço nas hastes traseiras do cav. Orig. x Otim.':Fhtot,
+        '[Gráfico] Esforço nas hastes dianteiras do cav. Orig. x Otim.':Fhdot,
     }
 
     eixo_x = teta
@@ -587,29 +599,61 @@ def mostra_modelo(
         label_x = 'Raio (m)'
     
     df.loc[combo_modelos]['[Gráfico] Raio'] = ast.literal_eval(df.loc[combo_modelos]['teta'])
-
+    print(slider_penTcg)
     if combo_param[:9] == '[Gráfico]':
 
-        return dcc.Graph(
-            id='grafico_tabela',
-            figure={
-                'data':[
-                    go.Scatter(
-                            #name='Otimizado',
+        if combo_param[len(combo_param)-5:] == 'Otim.':
+
+            return dcc.Graph(
+                id='grafico_tabela',
+                figure={
+                    'data':[
+                        go.Scatter(
+                            name='Original',
+                            x=eixo_x,
+                            y=eixo_y[combo_param[:len(combo_param)-14]],
+                            text='Textoo',
+                            mode='markers+lines'
+                        ),
+                        go.Scatter(
+                            name='Otimizado',
                             x=eixo_x,
                             y=eixo_y[combo_param],
                             text='Textoo',
                             mode='markers+lines'
                         ),
-                ],
-                'layout':go.Layout(
+                    ],
+                    'layout':go.Layout(
                         title=combo_param[10:]+' - '+combo_modelos,
                         xaxis={'title':label_x},
                         yaxis={'title':combo_param[10:]},
                         hovermode='closest'
-                )
-            }
-        )
+                    )
+                }
+            )
+        
+        else:
+            return dcc.Graph(
+                id='grafico_tabela',
+                figure={
+                    'data':[
+                        go.Scatter(
+                                #name='Otimizado',
+                                x=eixo_x,
+                                y=eixo_y[combo_param],
+                                text='Textoo',
+                                mode='markers+lines'
+                            ),
+                    ],
+                    'layout':go.Layout(
+                            title=combo_param[10:]+' - '+combo_modelos,
+                            xaxis={'title':label_x},
+                            yaxis={'title':combo_param[10:]},
+                            hovermode='closest'
+                    )
+                }
+            )
+
     if combo_param[:10] == '[Variável]':
         return str(eval(combo_param[11:]))
 
