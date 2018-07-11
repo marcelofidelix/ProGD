@@ -544,7 +544,7 @@ def mostra_modelo(
             while((Tcgot[i] > max(Tcg)*slider_penTcg/100) or (Tclot_cabo[i] > max(Tcl_cabo)*slider_penTcl/100)
             or (Eclot[i] > max(Ecl)*slider_penEcl/100) or (Momot[i] > max(Mom)*slider_penMom/100)
             or (Fhtot[i] > max(Fht)*slider_penFht/100) or (Fhdot[i] > max(Fhd)*slider_penFhd/100)
-            or (Pcot[i] > Pc[i]*slider_penFator/100) or (Pcot[i] > slider_penLim/100)):
+            or (Pcot[i] > Pc[i]*slider_penFator/100) or (Pcot[i] > Pc[i]*slider_penLim/100)):
 
                 Pcot[i] = Pcot[i] - 10
                 cvonot[i] = 1.373 - ((Pcot[i]+Pmoi)*2.204623)/(1173913) + Av #adm
@@ -566,6 +566,8 @@ def mostra_modelo(
                 Fhdot[i] = (Tclot[i]*FLFl*Npl*sin(.5*pi+alfacl[i]))/(sin(pi-tetac))
                 Fhtot[i] = (Tclot[i]*FLFl*Npl*sin(.5*pi-tetac+alfacl[i]))/(sin(tetac)) - Tclot[i]*FLFl
                 cont = cont + 1
+                print(Pc[i])
+                print()
 
 
     eixo_y = {
