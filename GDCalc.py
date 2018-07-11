@@ -26,6 +26,7 @@ for i in df_dados['Modelo']:
 lista_param = ['[Gráfico] Ângulo alfa',
 '[Gráfico] Ângulo beta',
 '[Gráfico] Capacidade Estática',
+'[Gráfico] Capacidade Estática Orig. x Otim.',
 '[Gráfico] Raio',
 '[Gráfico] Cabo do sistema principal',
 '[Gráfico] Cabo do sistema principal Orig. x Otim.',
@@ -581,6 +582,7 @@ def mostra_modelo(
         '[Gráfico] Esforço de compressão na lança Orig. x Otim.':Eclot,
         '[Gráfico] gama':degrees(gama),
         '[Gráfico] teta':teta,
+        '[Gráfico] Capacidade Estática Orig. x Otim.':Pcot,
     }
 
     eixo_x = teta
