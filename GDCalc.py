@@ -50,6 +50,8 @@ lista_param = ['[Gráfico] Ângulo alfa',
 '[Gráfico] Tcgy',
 '[Gráfico] Tclx',
 '[Gráfico] Tcly',
+'[Gráfico] gama',
+'[Gráfico] teta',
 '[Variável] a',
 '[Variável] b',
 '[Variável] V',
@@ -247,22 +249,6 @@ app.layout = html.Div([
         value=100,
     ),
 
-    html.Div('Fator de limitação'),
-
-    dcc.Slider(
-        id='slider_penLim',
-        min=0,
-        max=100,
-        step=1,
-            marks={
-        25: '25%',
-        50: '50%',
-        75 : '75%',
-        100: '100%'
-    },
-        value=100,
-    ),
-
     html.H4('Altura de onda significativa'),
 
     dcc.Slider(
@@ -337,7 +323,6 @@ app.layout = html.Div([
     Input('slider_penFht', 'value'),
     Input('slider_penFhd', 'value'),
     Input('slider_penFator', 'value'),
-    Input('slider_penLim', 'value'),
     ])
 
 def mostra_modelo(
@@ -353,8 +338,8 @@ def mostra_modelo(
     slider_penMom,
     slider_penFht,
     slider_penFhd,
-    slider_penFator,
-    slider_penLim):
+    slider_penFator
+    ):
     df = df_dados.set_index('Modelo')
 
     #Associa os valores do banco de dados às variáveis
@@ -495,7 +480,6 @@ def mostra_modelo(
     Rpy = Tcgy + Tcly - (Pl + FLkgf + Pmoi + Pbola + CC1+CC2+CC3+CC4)
     Rp = (Rpx**2 + Rpy**2)**.5
     gama = arctan(abs(Rpy)/abs(Rpx))
-    gama_teta = degrees(gama - radians(teta))
 
     """Esforço de compressão da lança"""
     Ecl = Rp * cos(gama - teta_rad)
@@ -533,7 +517,7 @@ def mostra_modelo(
 
     """Evita que o programa entre sempre no loop de otimização, o que o deixa lento"""
     if ((slider_penTcg == 100) and (slider_penTcl == 100) and (slider_penEcl == 100) and (slider_penMom == 100) and 
-    (slider_penFht == 100) and (slider_penFhd == 100) and (slider_penFator == 100) and (slider_penLim == 100)):
+    (slider_penFht == 100) and (slider_penFhd == 100) and (slider_penFator == 100)):
         pass
     
     else:
@@ -544,7 +528,7 @@ def mostra_modelo(
             while((Tcgot[i] > max(Tcg)*slider_penTcg/100) or (Tclot_cabo[i] > max(Tcl_cabo)*slider_penTcl/100)
             or (Eclot[i] > max(Ecl)*slider_penEcl/100) or (Momot[i] > max(Mom)*slider_penMom/100)
             or (Fhtot[i] > max(Fht)*slider_penFht/100) or (Fhdot[i] > max(Fhd)*slider_penFhd/100)
-            or (Pcot[i] > Pc[i]*slider_penFator/100) or (Pcot[i] > max(Pc)*slider_penLim/100)):
+            or (Pcot[i] > Pc[i]*slider_penFator/100)):
 
                 Pcot[i] = Pcot[i] - 10
                 cvonot[i] = 1.373 - ((Pcot[i]+Pmoi)*2.204623)/(1173913) + Av #adm
@@ -586,7 +570,7 @@ def mostra_modelo(
         '[Gráfico] Tcly':Tcly,
         '[Gráfico] Rpx':Rpx,         
         '[Gráfico] Rpy':Rpy,         
-        '[Gráfico] gama_teta':gama_teta,
+        '[Gráfico] gama - teta':degrees(gama) - teta,
         '[Gráfico] alfacl':degrees(alfacl),
         '[Gráfico] Cabo do sistema principal Orig. x Otim.':Tcgot,
         '[Gráfico] Cabo de lança Orig. x Otim.':Tclot*FLFl,
@@ -596,6 +580,8 @@ def mostra_modelo(
         '[Gráfico] Esforço nas hastes dianteiras do cav. Orig. x Otim.':Fhdot,
         '[Gráfico] Esforço de compressão na lança':Ecl,
         '[Gráfico] Esforço de compressão na lança Orig. x Otim.':Eclot,
+        '[Gráfico] gama':degrees(gama),
+        '[Gráfico] teta':teta,
     }
 
     eixo_x = teta
@@ -671,5 +657,4 @@ def update_output(value):
     return 'Hsig = {}m'.format(value)
 
 if __name__ == '__main__':
-    #app.css.append_css({'external_url': 'https://codepen.io/chriddyp/pen/bWLwgP.css'})
     app.run_server(debug=True)
