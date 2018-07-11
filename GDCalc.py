@@ -551,7 +551,6 @@ def mostra_modelo(
                 Fhtot[i] = (Tclot[i]*FLFl*Npl*sin(.5*pi-tetac+alfacl[i]))/(sin(tetac)) - Tclot[i]*FLFl
                 cont = cont + 1
 
-
     eixo_y = {
         '[Gráfico] Ângulo alfa':rad2deg(alfa),
         '[Gráfico] Ângulo beta':rad2deg(beta),
@@ -592,7 +591,7 @@ def mostra_modelo(
         label_x = 'Raio (m)'
     
     df.loc[combo_modelos]['[Gráfico] Raio'] = ast.literal_eval(df.loc[combo_modelos]['teta'])
-    print(slider_penTcg)
+
     if combo_param[:9] == '[Gráfico]':
 
         if combo_param[len(combo_param)-5:] == 'Otim.':
