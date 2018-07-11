@@ -32,6 +32,8 @@ lista_param = ['[Gráfico] Ângulo alfa',
 '[Gráfico] Cabo de lança',
 '[Gráfico] Cabo de lança Orig. x Otim.',
 '[Gráfico] cvon',
+'[Gráfico] Esforço de compressão na lança',
+'[Gráfico] Esforço de compressão na lança Orig. x Otim.',
 '[Gráfico] Esforço nas hastes traseiras do cav. Orig. x Otim.',
 '[Gráfico] Esforço nas hastes traseiras do cav.',
 '[Gráfico] Esforço nas hastes dianteiras do cav. Orig. x Otim.',
@@ -480,16 +482,19 @@ def mostra_modelo(
     Tcl = (Pl*M*cos(teta_rad) + FLkgf*(L*cos(teta_rad) + S*sin(teta_rad)) + Pbola*((L + Ljib)*cos(teta_rad) + Sjib*sin(teta_rad)) + (CC1*D1 + CC2*D2 + CC3*D3 + CC4*D4)*cos(teta_rad) - Tcg*L*sin(alfa)) / ((L - N)*sin(beta))
 
     #Componentes de Tcg e Tcl 
-    Tcgx = -Tcg*(cos(teta_rad-alfa))
-    Tcgy = -Tcg*cos(pi/2-teta_rad+alfa)
-    Tclx = -Tcl*(cos(teta_rad-beta))
-    Tcly = -Tcl*cos(pi/2-teta_rad+beta)
+    Tcgx = -Tcg*(cos(pi/2 - pi/2 - teta_rad - alfa))
+    #Tcgy = -Tcg*cos(pi/2 - teta_rad + alfa)
+    Tclx = -Tcl*(cos(pi/2 - pi/2 - teta_rad - beta))
+    #Tcly = -Tcl*cos(pi/2 - teta_rad + beta)
+
+    Tcgy = Tcg*(sin(pi/2 - pi/2 - teta_rad - alfa))
+    Tcly = Tcl*(sin(pi/2 - pi/2 - teta_rad - beta))
 
     #Reações no pino do pé da lança
-    Rpx = - (Tcgx + Tclx)
-    Rpy = - (Tcgy + Tcly -(Pl + FLkgf + Pmoi + Pbola + CC1+CC2+CC3+CC4))
+    Rpx = Tcgx + Tclx
+    Rpy = Tcgy + Tcly - (Pl + FLkgf + Pmoi + Pbola + CC1+CC2+CC3+CC4)
     Rp = (Rpx**2 + Rpy**2)**.5
-    gama = arctan(Rpy/Rpx)
+    gama = arctan(abs(Rpy)/abs(Rpx))
     gama_teta = degrees(gama - radians(teta))
 
     """Esforço de compressão da lança"""
@@ -589,6 +594,8 @@ def mostra_modelo(
         '[Gráfico] Momento Orig. x Otim.':Momot,
         '[Gráfico] Esforço nas hastes traseiras do cav. Orig. x Otim.':Fhtot,
         '[Gráfico] Esforço nas hastes dianteiras do cav. Orig. x Otim.':Fhdot,
+        '[Gráfico] Esforço de compressão na lança':Ecl,
+        '[Gráfico] Esforço de compressão na lança Orig. x Otim.':Eclot,
     }
 
     eixo_x = teta
