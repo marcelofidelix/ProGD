@@ -531,7 +531,7 @@ def mostra_modelo(
             or (Fhtot[i] > max(Fht)*slider_penFht/100) or (Fhdot[i] > max(Fhd)*slider_penFhd/100)
             or (Pcot[i] > Pc[i]*slider_penFator/100)):
 
-                Pcot[i] = Pcot[i] - 10
+                Pcot[i] = Pcot[i] - 100
                 cvonot[i] = 1.373 - ((Pcot[i]+Pmoi)*2.204623)/(1173913) + Av #adm
                 FLkgfot = Pcot[i] * cvonot
                 Tcgot[i] = (FLkgfot[i] + Pmoi) * FLFm
