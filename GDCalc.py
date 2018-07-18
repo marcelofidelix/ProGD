@@ -6,6 +6,7 @@ import plotly.graph_objs as go
 import pandas as pd
 import ast
 from numpy import radians, cos, array, arctan, arcsin, sin, pi, rad2deg, degrees, copy
+import Funcoes
 
 app = dash.Dash()
 
@@ -258,9 +259,21 @@ app.layout = html.Div([
         max=5,
         step=0.1,
         value=0,
-    ),],style={'width': '80%'}),
+    ),
 
     html.Div(id='slider_Hsig_out'),
+
+    html.H4('Vh (ft/s)'),
+
+    dcc.Slider(
+        id='slider_Vh',
+        min=0,
+        max=5,
+        step=0.1,
+        value=0,
+    ),],style={'width': '80%'}),
+
+    html.Div(id='slider_Vh_out'),
 
     html.H4('UEP'),
 
@@ -272,6 +285,18 @@ app.layout = html.Div([
             {'label': 'FPSO', 'value': 'FPSO'},
         ],
         value='Fixa',
+        labelStyle={'display': 'inline-block'}
+    ),
+
+    html.H4('Embarcação'),
+
+    dcc.RadioItems(
+        id='radio_embarc',
+        options=[
+            {'label': 'Embarcação', 'value': 'Embarcação'},
+            {'label': 'Estrutura fixa', 'value': 'Estrutura fixa'},
+        ],
+        value='Embarcação',
         labelStyle={'display': 'inline-block'}
     ),
 
@@ -287,9 +312,8 @@ app.layout = html.Div([
         labelStyle={'display': 'inline-block'}
     ),
 
-    ],
-        style={'width': '100%', 'display': 'inline-block','columnCount': 2}),
-
+    ],style={'width': '100%', 'display': 'inline-block','columnCount': 2}),
+    
     html.H4('Parâmetros de saída'),
 
     dcc.Dropdown(
@@ -316,6 +340,8 @@ app.layout = html.Div([
     Input('combo_param', 'value'),
     Input('radio_mancal', 'value'),
     Input('radio_UEP', 'value'),
+    Input('slider_Vh', 'value'),
+    Input('radio_embarc', 'value'),
     Input('slider_Hsig', 'value'),
     Input('slider_penTcg', 'value'),
     Input('slider_penTcl', 'value'),
@@ -332,6 +358,8 @@ def mostra_modelo(
     combo_param,
     radio_mancal,
     radio_UEP,
+    slider_Vh,
+    radio_embarc,
     slider_Hsig,
     slider_penTcg,
     slider_penTcl,
@@ -552,6 +580,52 @@ def mostra_modelo(
                 Fhtot[i] = (Tclot[i]*FLFl*Npl*sin(.5*pi-tetac+alfacl[i]))/(sin(tetac)) - Tclot[i]*FLFl
                 cont = cont + 1
 
+            #CÁLCULOS DOS CRITÉRIOS DEFINIDOS NA API 2C
+            Vd = 0
+            Vc = 0
+            #Av = 0
+            CHA = 0
+            List = 0
+            Trim = 0
+            
+            #Hsig e gravidade em unidades imperiais
+            Hsig = Hsig *3.28083 #ft
+            grav = 32.2 #ft/s²
+            esc_UEP = radio_UEP
+
+            #APLICAÇÃO DAS FUNÇÕES
+            esc_embarc = radio_embarc
+            Vd = Funcoes.calc_Vd(esc_embarc,Hsig)
+            Vc = Funcoes.calc_Vc(esc_UEP,Hsig)
+            CHA = Funcoes.calc_CHA(esc_UEP,Hsig)
+            List = Funcoes.calc_List(esc_UEP)
+            Trim = Funcoes.calc_Trim(esc_UEP)
+            Vhmin = Funcoes.calc_Vhmin(Hsig)
+
+            Vh = slider_Vh
+
+            Vr = Vh + (Vd**2+Vc**2)**.5
+
+            #CÁLCULOS DE RIGIDEZ
+            Lclan = Lcl - Lpend #m
+            kcabolan = (1/9.81) * Npl * El*(1e6) * (.66*.25*(pi*Dcabolan**2)/Lclan) #kgf/m
+            kcabopend = (1/9.81) * Npend * Ep*(1e6) * (.66*.25*(pi*Dcabopend**2)/Lpend) #kgf/m
+            Htip = Alt +L*sin(teta_rad) #m
+            Acb = (.77*.25*(pi*Dcabomoi**2))
+
+            ksustlan = (kcabopend*kcabolan)/(kcabopend+kcabolan) #kgf/m
+
+            Alan = 0
+
+            if (tipocorda == "C"):
+                Alan = pi * (Dc**2 - (Dc-2*t)**2) / 4 #m²
+                #print(Alan)
+            elif (tipocorda == "Q"):
+                Alan = Dc**2 - (Dc - t)**2 #m²
+            elif (tipocorda == "L"):
+                Alan = Dc * 2 * t - t**2 #m²
+
+
     eixo_y = {
         '[Gráfico] Ângulo alfa':rad2deg(alfa),
         '[Gráfico] Ângulo beta':rad2deg(beta),
@@ -656,6 +730,12 @@ def mostra_modelo(
     [dash.dependencies.Input('slider_Hsig', 'value')])
 def update_output(value):
     return 'Hsig = {}m'.format(value)
+
+@app.callback(
+    dash.dependencies.Output('slider_Vh_out', 'children'),
+    [dash.dependencies.Input('slider_Vh', 'value')])
+def update_output(value):
+    return 'Vh = {}ft/s'.format(value)
 
 if __name__ == '__main__':
     app.run_server(debug=True)

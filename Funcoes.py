@@ -1,6 +1,3 @@
-import matplotlib
-matplotlib.use("TkAgg")
-from matplotlib import pyplot as plt
 from numpy import radians, cos, sin, argmax, round_
 
 #Função que gera o gráfico de uma variável
@@ -54,11 +51,11 @@ def raio(teta, L, J, S):
 #BARCO. OS VALORES SÃO CALCULADOS CONFORME TABELA 3, EM ft/s
 def calc_Vd(esc_embarc,Hsig):
     Vd = 0
-    if (esc_embarc == 'Estrutura Fixa'):
+    if (esc_embarc == 'Estrutura fixa'):
         Vd = 0. #ft/s
-    elif (esc_embarc == 'Barco' and Hsig < 9.8):
+    elif (esc_embarc == 'Embarcação' and Hsig < 9.8):
         Vd = .6*Hsig #ft/s
-    elif (esc_embarc == 'Barco' and Hsig >= 9.8):
+    elif (esc_embarc == 'Embarcação' and Hsig >= 9.8):
         Vd = 5.9 + .3*(Hsig - 9.8) #ft/s
     return Vd
  
@@ -110,24 +107,10 @@ def calc_Av(esc_UEP,Hsig):
 
 def calc_CHA(esc_UEP,Hsig):
     CHA = ''
-    if (esc_UEP == 'Botton Supported Structure'):
+    if (esc_UEP == 'Fixa'):
         CHA = 0. #*g
-    elif (esc_UEP == 'Ship and Barge in Calm Water'):
-        CHA = 0.
-    elif (esc_UEP == 'TLP'):
-        CHA = 0.007 * Hsig
-        if (CHA < .03):
-            CHA = .03
-    elif (esc_UEP == 'Spar'):
-        CHA = 0.007 * Hsig
-        if (CHA < .03):
-            CHA = .03
     elif (esc_UEP == 'SS'):
         CHA = 0.007 * Hsig
-        if (CHA < .03):
-            CHA = .03
-    elif (esc_UEP == 'Drill Ship'):
-        CHA = .01*(Hsig)**1.1
         if (CHA < .03):
             CHA = .03
     elif (esc_UEP == 'FPSO'):
@@ -141,36 +124,20 @@ def calc_CHA(esc_UEP,Hsig):
 
 def calc_List(esc_UEP):
     List = 0
-    if (esc_UEP == 'Botton Supported Structure'):
+    if (esc_UEP == 'Fixa'):
         List = .5 #°
-    elif (esc_UEP == 'Ship and Barge in Calm Water'):
-        List = 5.
-    elif (esc_UEP == 'TLP'):
-        List = .5
-    elif (esc_UEP == 'Spar'):
-        List = .5
     elif (esc_UEP == 'SS'):
         List = 1.5
-    elif (esc_UEP == 'Drill Ship'):
-        List = 2.5
     elif (esc_UEP == 'FPSO'):
         List = 2.5
     return List
 
 def calc_Trim(esc_UEP):
     Trim = 0
-    if (esc_UEP == 'Botton Supported Structure'):
+    if (esc_UEP == 'Fixa'):
         Trim = .5 #°
-    elif (esc_UEP == 'Ship and Barge in Calm Water'):
-        Trim = 3.
-    elif (esc_UEP == 'TLP'):
-        Trim = .5
-    elif (esc_UEP == 'Spar'):
-        Trim = .5
     elif (esc_UEP == 'SS'):
         Trim = 1.5
-    elif (esc_UEP == 'Drill Ship'):
-        Trim = 1.
     elif (esc_UEP == 'FPSO'):
         Trim = 1.
     return Trim
