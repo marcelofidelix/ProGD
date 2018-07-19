@@ -510,7 +510,7 @@ def mostra_modelo(
     for i in range(tamanho):
         if (cvon[i] <= (1.1+Av)):
             cvon[i] = 1.1+Av #adm
-        elif (cvon[i] >= (3.33+Av)):
+        elif (cvon[i] >= (1.33+Av)):
             cvon[i] = 1.33+Av #adm
 
     #Factored Load
