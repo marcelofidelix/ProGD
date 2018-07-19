@@ -302,7 +302,7 @@ app.layout = html.Div([
         min=0,
         max=5,
         step=0.1,
-        value=0,
+        value=2,
     ),
 
     html.Div(id='slider_Hsig_out'),
@@ -535,9 +535,9 @@ def mostra_modelo(
     #Cálculo do Fast Line Factor
     Kb = 0
     if radio_mancal=='Rolamento':
-        Kb = 1.02
+        Kb = 1.04
     else:
-        Kb = 1.045
+        Kb = 1.09
     FLFl = 1/(Npl*((Kb**Npl - 1) / ((Kb**Nrl) * Npl * (Kb - 1))))
     FLFm = 1/(Npm*((Kb**Npm - 1) / ((Kb**Nrm) * Npm * (Kb - 1))))
 
@@ -546,7 +546,7 @@ def mostra_modelo(
 
     #Cálculo de esforço no cabo da lança
     Tcl = (Pl*M*cos(teta_rad) + FLkgf*(L*cos(teta_rad) + S*sin(teta_rad)) + Pbola*((L + Ljib)*cos(teta_rad) + Sjib*sin(teta_rad)) + (CC1*D1 + CC2*D2 + CC3*D3 + CC4*D4)*cos(teta_rad) - Tcg*L*sin(alfa)) / ((L - N)*sin(beta))
-
+    Tcl *= (FLFl * Npl)
     #Componentes de Tcg e Tcl 
     Tcgx = -Tcg*(cos(pi/2 - pi/2 - teta_rad - alfa))
     #Tcgy = -Tcg*cos(pi/2 - teta_rad + alfa)
@@ -779,7 +779,8 @@ def mostra_modelo(
             )
 
     if combo_param[:10] == '[Variável]':
-        return str(eval(combo_param[11:]))
+
+            return str(eval(combo_param[11:]))
 
 @app.callback(
     dash.dependencies.Output('slider_Hsig_out', 'children'),
