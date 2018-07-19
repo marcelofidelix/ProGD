@@ -242,7 +242,7 @@ app.layout = html.Div([
         min=0,
         max=100,
         step=1,
-            marks={
+        marks={
         25: '25%',
         50: '50%',
         75 : '75%',
@@ -275,6 +275,24 @@ app.layout = html.Div([
         id='In_Ep',
         value='86874',
         type='text',
+    ),
+
+    html.H4('Altura do chassi em relação ao mar (m)'),
+
+    dcc.Slider(
+        id='slider_H',
+        min=0,
+        max=50,
+        step=1,
+        value=20,
+        marks={
+        0: '0',
+        10: '10',
+        20: '20',
+        30: '30',
+        40: '40',
+        50: '50'
+        },
     ),
 
     html.H4('Altura de onda significativa'),
@@ -379,6 +397,7 @@ app.layout = html.Div([
     Input('In_Ecm', 'value'),
     Input('In_El', 'value'),
     Input('In_Ep', 'value'),
+    Input('slider_H', 'value'),
     ])
 
 def mostra_modelo(
@@ -399,7 +418,8 @@ def mostra_modelo(
     slider_penFator,
     In_Ecm,
     In_El,
-    In_Ep
+    In_Ep,
+    slider_H
     ):
     df = df_dados.set_index('Modelo')
     
@@ -642,6 +662,7 @@ def mostra_modelo(
             El = float(In_El)
             Em = float(In_Ecm)
             Ep = float(In_Ep)
+            Alt = slider_H
 
             Lclan = Lcl - Lpend #m
             kcabolan = (1/9.81) * Npl * El*(1e6) * (.66*.25*(pi*Dcabolan**2)/Lclan) #kgf/m
