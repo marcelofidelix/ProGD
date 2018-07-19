@@ -102,6 +102,8 @@ lista_param = ['[Gráfico] Ângulo alfa',
 '[Variável] CHA',
 '[Variável] List',
 '[Variável] Trim',
+'[Variável] H',
+'[Variável] tetac',
 ]
 
 sorted(lista_param)
