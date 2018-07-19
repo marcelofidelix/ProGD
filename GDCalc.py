@@ -251,6 +251,32 @@ app.layout = html.Div([
         value=100,
     ),
 
+    html.H4('Módulo de elasticidade do cabos'),
+
+    html.Div('Moitão (N/mm²)'),
+
+    dcc.Input(
+        id='In_Ecm',
+        value='99974',
+        type='text',
+    ),
+
+    html.Div('Lança (N/mm²)'),
+
+    dcc.Input(
+        id='In_El',
+        value='86874',
+        type='text',
+    ),
+
+    html.Div('Pendentes (N/mm²)'),
+
+    dcc.Input(
+        id='In_Ep',
+        value='86874',
+        type='text',
+    ),
+
     html.H4('Altura de onda significativa'),
 
     dcc.Slider(
@@ -270,7 +296,7 @@ app.layout = html.Div([
         min=0,
         max=5,
         step=0.1,
-        value=0,
+        value=1.3,
     ),],style={'width': '80%'}),
 
     html.Div(id='slider_Vh_out'),
@@ -350,6 +376,9 @@ app.layout = html.Div([
     Input('slider_penFht', 'value'),
     Input('slider_penFhd', 'value'),
     Input('slider_penFator', 'value'),
+    Input('In_Ecm', 'value'),
+    Input('In_El', 'value'),
+    Input('In_Ep', 'value'),
     ])
 
 def mostra_modelo(
@@ -367,10 +396,13 @@ def mostra_modelo(
     slider_penMom,
     slider_penFht,
     slider_penFhd,
-    slider_penFator
+    slider_penFator,
+    In_Ecm,
+    In_El,
+    In_Ep
     ):
     df = df_dados.set_index('Modelo')
-
+    
     #Associa os valores do banco de dados às variáveis
     teta = array(ast.literal_eval(df.loc[combo_modelos]['teta']))
     Pc = array(ast.literal_eval(df.loc[combo_modelos]['Pc']))
@@ -607,6 +639,10 @@ def mostra_modelo(
             Vr = Vh + (Vd**2+Vc**2)**.5
 
             #CÁLCULOS DE RIGIDEZ
+            El = float(In_El)
+            Em = float(In_Ecm)
+            Ep = float(In_Ep)
+
             Lclan = Lcl - Lpend #m
             kcabolan = (1/9.81) * Npl * El*(1e6) * (.66*.25*(pi*Dcabolan**2)/Lclan) #kgf/m
             kcabopend = (1/9.81) * Npend * Ep*(1e6) * (.66*.25*(pi*Dcabopend**2)/Lpend) #kgf/m
@@ -624,7 +660,6 @@ def mostra_modelo(
                 Alan = Dc**2 - (Dc - t)**2 #m²
             elif (tipocorda == "L"):
                 Alan = Dc * 2 * t - t**2 #m²
-
 
     eixo_y = {
         '[Gráfico] Ângulo alfa':rad2deg(alfa),
@@ -734,7 +769,7 @@ def update_output(value):
 @app.callback(
     dash.dependencies.Output('slider_Vh_out', 'children'),
     [dash.dependencies.Input('slider_Vh', 'value')])
-def update_output(value):
+def update_output2(value):
     return 'Vh = {}ft/s'.format(value)
 
 if __name__ == '__main__':
