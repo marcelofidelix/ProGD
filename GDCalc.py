@@ -157,6 +157,8 @@ app.layout = html.Div([
         value=100,
     ),
 
+    html.Div(id='slider_penTcg_out'),
+
     html.Div('Cabo da lança'),
 
     dcc.Slider(
@@ -172,6 +174,8 @@ app.layout = html.Div([
     },
         value=100,
     ),
+
+    html.Div(id='slider_penTcl_out'),
 
     html.Div('Comp. da Lança'),
 
@@ -189,6 +193,8 @@ app.layout = html.Div([
         value=100,
     ),
 
+    html.Div(id='slider_penEcl_out'),
+
     html.Div('Momento'),
 
     dcc.Slider(
@@ -204,6 +210,8 @@ app.layout = html.Div([
     },
         value=100,
     ),
+
+    html.Div(id='slider_penMom_out'),
 
     html.Div('Hastes tras. do cav.'),
 
@@ -221,6 +229,8 @@ app.layout = html.Div([
         value=100,
     ),
 
+    html.Div(id='slider_penFht_out'),
+
     html.Div('Hastes dian. do cav.'),
 
     dcc.Slider(
@@ -237,6 +247,8 @@ app.layout = html.Div([
         value=100,
     ),
 
+    html.Div(id='slider_penFhd_out'),
+
     html.Div('Fator de penalização'),
 
     dcc.Slider(
@@ -252,6 +264,8 @@ app.layout = html.Div([
     },
         value=100,
     ),
+
+    html.Div(id='slider_penFator_out'),
 
     html.H4('Módulo de elasticidade do cabos'),
 
@@ -795,6 +809,48 @@ def update_output(value):
     [dash.dependencies.Input('slider_Vh', 'value')])
 def update_output2(value):
     return 'Vh = {}ft/s'.format(value)
+
+@app.callback(
+    dash.dependencies.Output('slider_penTcg_out', 'children'),
+    [dash.dependencies.Input('slider_penTcg', 'value')])
+def update_output3(value):
+    return '{}%'.format(value)
+
+@app.callback(
+    dash.dependencies.Output('slider_penTcl_out', 'children'),
+    [dash.dependencies.Input('slider_penTcl', 'value')])
+def update_output4(value):
+    return '{}%'.format(value)
+
+@app.callback(
+    dash.dependencies.Output('slider_penEcl_out', 'children'),
+    [dash.dependencies.Input('slider_penEcl', 'value')])
+def update_output5(value):
+    return '{}%'.format(value)
+
+@app.callback(
+    dash.dependencies.Output('slider_penMom_out', 'children'),
+    [dash.dependencies.Input('slider_penMom', 'value')])
+def update_output6(value):
+    return '{}%'.format(value)
+
+@app.callback(
+    dash.dependencies.Output('slider_penFht_out', 'children'),
+    [dash.dependencies.Input('slider_penFht', 'value')])
+def update_output7(value):
+    return '{}%'.format(value)
+
+@app.callback(
+    dash.dependencies.Output('slider_penFhd_out', 'children'),
+    [dash.dependencies.Input('slider_penFhd', 'value')])
+def update_output8(value):
+    return '{}%'.format(value)
+
+@app.callback(
+    dash.dependencies.Output('slider_penFator_out', 'children'),
+    [dash.dependencies.Input('slider_penFator', 'value')])
+def update_output9(value):
+    return '{}%'.format(value)
 
 if __name__ == '__main__':
     app.run_server(debug=True)
