@@ -104,6 +104,8 @@ lista_param = ['[Gráfico] Ângulo alfa',
 '[Variável] List',
 '[Variável] Trim',
 '[Variável] H',
+'[Variável] FLFm',
+'[Variável] FLFl',
 '[Variável] tetac',
 '[Variável] slider_penTcg'
 ]
@@ -594,7 +596,7 @@ def mostra_modelo(
     Rpxot = copy(Rpx)
     Rpyot = copy(Rpy)
     Rpot = copy(Rp)
-    gamaot = gama
+    gamaot = copy(gama)
     FLkgfot = copy(FLkgf)
     cvonot = copy(cvon)
 
@@ -621,7 +623,7 @@ def mostra_modelo(
         or (Eclot[i] > (max(Ecl)*penEcl)) or (Momot[i] > (max(Mom)*penMom))
         or (Fhtot[i] > (max(Fht)*penFht)) or (Fhdot[i] > (max(Fhd)*penFhd))
         or (Pcot[i] > (Pc[i]*penFator))):
-
+            #print(penFator)
             Pcot[i] = Pcot[i] - 10
 
             cvonot[i] = 1.373 - ((Pcot[i]+Pmoi)*2.204623)/(1173913) + Av #adm
@@ -652,7 +654,7 @@ def mostra_modelo(
             Momot[i] = CC1*(D1*cos(teta_rad[i])+J) + CC2*(D2*cos(teta_rad[i])+J) + CC3*(D3*cos(teta_rad[i])+J) + Pl*(M*cos(teta_rad[i])+J) + FLkgfot[i]*(L*cos(teta_rad[i])+ S*sin(teta_rad[i])+J) + Pbola*((L + Ljib)*cos(teta_rad[i])) - Pcp*Dcp - Pplat*Dplat
             Fhdot[i] = (Tclot[i]*FLFl*Npl*sin(.5*pi+alfacl[i]))/(sin(pi-tetac))
             Fhtot[i] = (Tclot[i]*FLFl*Npl*sin(.5*pi-tetac+alfacl[i]))/(sin(tetac)) - Tclot[i]*FLFl
-
+    #print(Pcot)
     #CÁLCULOS DOS CRITÉRIOS DEFINIDOS NA API 2C
     Vd = 0
     Vc = 0
