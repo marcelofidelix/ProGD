@@ -105,6 +105,7 @@ lista_param = ['[Gráfico] Ângulo alfa',
 '[Variável] Trim',
 '[Variável] H',
 '[Variável] tetac',
+'[Variável] slider_penTcg'
 ]
 
 sorted(lista_param)
@@ -517,7 +518,7 @@ def mostra_modelo(
             cvon[i] = 1.33+Av #adm
 
     #Factored Load
-    FLkgf = (Pc + Pmoi) * cvon
+    FLkgf = Pc * cvon
 
     #Parâmetros geométricos
     Dg = ((H)**2+(V+G/2)**2)**.5
@@ -545,7 +546,7 @@ def mostra_modelo(
     FLFm = 1/(Npm*((Kb**Npm - 1) / ((Kb**Nrm) * Npm * (Kb - 1))))
 
     #Cálculo do esforço no cabo do moitão
-    Tcg = FLkgf * FLFm
+    Tcg = (FLkgf + Pmoi)* FLFm
 
     #Cálculo de esforço no cabo da lança
     Tcl = (Pl*M*cos(teta_rad) + (FLkgf + Pmoi)*(L*cos(teta_rad) + S*sin(teta_rad)) + Pbola*((L + Ljib)*cos(teta_rad) + Sjib*sin(teta_rad)) + (CC1*D1 + CC2*D2 + CC3*D3 + CC4*D4)*cos(teta_rad) - Tcg*L*sin(alfa)) / ((L - N)*sin(beta))
@@ -596,51 +597,61 @@ def mostra_modelo(
     gamaot = gama
     FLkgfot = copy(FLkgf)
     cvonot = copy(cvon)
-    
-    cont = 0
 
+    penTcg = slider_penTcg/100
+    penTcl = slider_penTcl/100
+    penEcl = slider_penEcl/100
+    penMom = slider_penMom/100
+    penFht = slider_penFht/100
+    penFhd = slider_penFhd/100
+    penFator = slider_penFator/100
+    '''
     """Evita que o programa entre sempre no loop de otimização, o que o deixa lento"""
     if ((slider_penTcg == 100) and (slider_penTcl == 100) and (slider_penEcl == 100) and (slider_penMom == 100) and 
     (slider_penFht == 100) and (slider_penFhd == 100) and (slider_penFator == 100)):
         pass
     
     else:
+    '''
+    #print(slider_penFator)
+    """Otimização da tabela"""
+    for i in range(tamanho):
+        #print(slider_penFator)
+        while((Tcgot[i] > (max(Tcg)*penTcg)) or (Tclot[i] > (max(Tcl)*penTcl))
+        or (Eclot[i] > (max(Ecl)*penEcl)) or (Momot[i] > (max(Mom)*penMom))
+        or (Fhtot[i] > (max(Fht)*penFht)) or (Fhdot[i] > (max(Fhd)*penFhd))
+        or (Pcot[i] > (Pc[i]*penFator))):
 
-        """Otimização da tabela"""
-        for i in range(tamanho):
-            
-            while((Tcgot[i] > max(Tcg)*slider_penTcg/100) or (Tclot[i] > max(Tcl)*slider_penTcl/100)
-            or (Eclot[i] > max(Ecl)*slider_penEcl/100) or (Momot[i] > max(Mom)*slider_penMom/100)
-            or (Fhtot[i] > max(Fht)*slider_penFht/100) or (Fhdot[i] > max(Fhd)*slider_penFhd/100)
-            or (Pcot[i] > Pc[i]*slider_penFator/100)):
+            Pcot[i] = Pcot[i] - 100
 
-                Pcot[i] = Pcot[i] - 100
-                cvonot[i] = 1.373 - ((Pcot[i]+Pmoi)*2.204623)/(1173913) + Av #adm
-                for i in range(tamanho):
-                    if (cvonot[i] <= (1.1+Av)):
-                        cvonot[i] = 1.1+Av #adm
-                    elif (cvonot[i] >= (1.33+Av)):
-                        cvonot[i] = 1.33+Av #adm
+            cvonot[i] = 1.373 - ((Pcot[i]+Pmoi)*2.204623)/(1173913) + Av #adm
+            for i in range(tamanho):
+                if (cvonot[i] <= (1.1+Av)):
+                    cvonot[i] = 1.1+Av #adm
+                elif (cvonot[i] >= (1.33+Av)):
+                    cvonot[i] = 1.33+Av #adm
 
-                FLkgfot = Pcot[i] * cvonot
-                Tcgot[i] = (FLkgfot[i] + Pmoi) * FLFm
-                #Tclot[i] = (Pl*M*cos(teta_rad[i]) + (FLkgfot[i] + Pmoi)*L*cos(teta_rad[i]) + (CC1*D1 + CC2*D2 + CC3*D3 + CC4*D4)*cos(teta_rad[i]) - Tcgot[i]*L*sin(alfa[i])) / ((L - N)*sin(beta[i]))
-                #Tclot[i] = (Pl*M*cos(teta_rad[i]) + (FLkgfot[i] + Pmoi)*(L*cos(teta_rad[i]) + S*sin(teta_rad[i])) + Pbola*((L + Ljib)*cos(teta_rad[i]) + Sjib*sin(teta_rad[i])) + (CC1*D1 + CC2*D2 + CC3*D3 + CC4*D4)*cos(teta_rad[i]) - Tcg[i]*L*sin(alfa[i])) / ((L - N)*sin(beta[i]))
-                Tclot[i] = (Pl*M*cos(teta_rad[i]) + (FLkgfot[i] + Pmoi)*(L*cos(teta_rad[i]) + S*sin(teta_rad[i])) + Pbola*((L + Ljib)*cos(teta_rad[i]) + Sjib*sin(teta_rad[i])) + (CC1*D1 + CC2*D2 + CC3*D3 + CC4*D4)*cos(teta_rad[i]) - Tcgot[i]*L*sin(alfa[i])) / ((L - N)*sin(beta[i]))
-                Tclot_cabo[i] = Tclot[i] * FLFl
-                Tcgxot[i] = -Tcgot[i]*(cos(teta_rad[i]-alfa[i]))
-                Tcgyot[i] = -Tcgot[i]*cos(pi/2-teta_rad[i]+alfa[i])
-                Tclxot[i] = -Tclot[i]*(cos(teta_rad[i]-beta[i]))
-                Tclyot[i] = -Tclot[i]*cos(pi/2-teta_rad[i]+beta[i])
-                Rpxot[i] = - (Tcgxot[i] + Tclxot[i])
-                Rpyot[i] = - (Tcgyot[i] + Tclyot[i] - (Pl + FLkgfot[i] + Pmoi + CC1+CC2+CC3+CC4))
-                Rpot[i] = (Rpxot[i]**2 + Rpyot[i]**2)**.5
-                gamaot[i] = arctan(Rpyot[i]/Rpxot[i])
-                Eclot[i] = Rpot[i] * cos(gamaot[i] - teta_rad[i])
-                Momot[i] = CC1*(D1*cos(teta_rad[i])+J) + CC2*(D2*cos(teta_rad[i])+J) + CC3*(D3*cos(teta_rad[i])+J) + Pl*(M*cos(teta_rad[i])+J) + (FLkgfot[i]+Pmoi)*(L*cos(teta_rad[i])+ S*sin(teta_rad[i])+J) + Pbola*((L + Ljib)*cos(teta_rad[i])) - Pcp*Dcp - Pplat*Dplat
-                Fhdot[i] = (Tclot[i]*FLFl*Npl*sin(.5*pi+alfacl[i]))/(sin(pi-tetac))
-                Fhtot[i] = (Tclot[i]*FLFl*Npl*sin(.5*pi-tetac+alfacl[i]))/(sin(tetac)) - Tclot[i]*FLFl
-                cont = cont + 1
+            FLkgfot[i] = Pcot[i] * cvonot[i]
+
+            Tcgot[i] = (FLkgfot[i] + Pmoi)* FLFm
+
+            Tclot[i] = (Pl*M*cos(teta_rad[i]) + (FLkgfot[i] + Pmoi)*(L*cos(teta_rad[i]) + S*sin(teta_rad[i])) + Pbola*((L + Ljib)*cos(teta_rad[i]) + Sjib*sin(teta_rad[i])) + (CC1*D1 + CC2*D2 + CC3*D3 + CC4*D4)*cos(teta_rad[i]) - Tcgot[i]*L*sin(alfa[i])) / ((L - N)*sin(beta[i]))
+            Tclot[i] *= (FLFl * Npl)
+
+            Tclot_cabo[i] = Tclot[i] * FLFl
+            Tcgxot[i] = -Tcgot[i]*(cos(pi/2 - pi/2 - teta_rad[i] - alfa[i]))
+            Tcgyot[i] = Tcgot[i]*(sin(pi/2 - pi/2 - teta_rad[i] - alfa[i]))
+            Tclxot[i] = -Tclot[i]*(cos(pi/2 - pi/2 - teta_rad[i] - beta[i]))
+            Tclyot[i] = Tclot[i]*(sin(pi/2 - pi/2 - teta_rad[i] - beta[i]))
+            Rpxot[i] = Tcgxot[i] + Tclxot[i]
+            Rpyot[i] = Tcgyot[i] + Tclyot[i] - (Pl + FLkgfot[i] + Pmoi + Pbola + CC1+CC2+CC3+CC4)
+            Rpot[i] = (Rpxot[i]**2 + Rpyot[i]**2)**.5
+            gamaot[i] = arctan(abs(Rpy[i])/abs(Rpx[i]))
+
+            Eclot[i] = Rpot[i] * cos(gamaot[i] - teta_rad[i])
+            Momot[i] = CC1*(D1*cos(teta_rad[i])+J) + CC2*(D2*cos(teta_rad[i])+J) + CC3*(D3*cos(teta_rad[i])+J) + Pl*(M*cos(teta_rad[i])+J) + FLkgfot[i]*(L*cos(teta_rad[i])+ S*sin(teta_rad[i])+J) + Pbola*((L + Ljib)*cos(teta_rad[i])) - Pcp*Dcp - Pplat*Dplat
+            Fhdot[i] = (Tclot[i]*FLFl*Npl*sin(.5*pi+alfacl[i]))/(sin(pi-tetac))
+            Fhtot[i] = (Tclot[i]*FLFl*Npl*sin(.5*pi-tetac+alfacl[i]))/(sin(tetac)) - Tclot[i]*FLFl
 
             #CÁLCULOS DOS CRITÉRIOS DEFINIDOS NA API 2C
             Vd = 0
