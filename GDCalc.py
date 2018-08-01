@@ -34,6 +34,7 @@ lista_param = ['[Gráfico] Ângulo alfa',
 '[Gráfico] Cabo de lança',
 '[Gráfico] Cabo de lança Orig. x Otim.',
 '[Gráfico] cvon',
+'[Gráfico] cvonot',
 '[Gráfico] Esforço de compressão na lança',
 '[Gráfico] Esforço de compressão na lança Orig. x Otim.',
 '[Gráfico] Esforço nas hastes traseiras do cav. Orig. x Otim.',
@@ -157,8 +158,6 @@ app.layout = html.Div([
         value=100,
     ),
 
-    html.Div(id='slider_penTcg_out'),
-
     html.Div('Cabo da lança'),
 
     dcc.Slider(
@@ -174,8 +173,6 @@ app.layout = html.Div([
     },
         value=100,
     ),
-
-    html.Div(id='slider_penTcl_out'),
 
     html.Div('Comp. da Lança'),
 
@@ -193,8 +190,6 @@ app.layout = html.Div([
         value=100,
     ),
 
-    html.Div(id='slider_penEcl_out'),
-
     html.Div('Momento'),
 
     dcc.Slider(
@@ -210,8 +205,6 @@ app.layout = html.Div([
     },
         value=100,
     ),
-
-    html.Div(id='slider_penMom_out'),
 
     html.Div('Hastes tras. do cav.'),
 
@@ -229,8 +222,6 @@ app.layout = html.Div([
         value=100,
     ),
 
-    html.Div(id='slider_penFht_out'),
-
     html.Div('Hastes dian. do cav.'),
 
     dcc.Slider(
@@ -247,8 +238,6 @@ app.layout = html.Div([
         value=100,
     ),
 
-    html.Div(id='slider_penFhd_out'),
-
     html.Div('Fator de penalização'),
 
     dcc.Slider(
@@ -264,8 +253,6 @@ app.layout = html.Div([
     },
         value=100,
     ),
-
-    html.Div(id='slider_penFator_out'),
 
     html.H4('Módulo de elasticidade do cabos'),
 
@@ -561,7 +548,7 @@ def mostra_modelo(
     Tcg = FLkgf * FLFm
 
     #Cálculo de esforço no cabo da lança
-    Tcl = (Pl*M*cos(teta_rad) + FLkgf*(L*cos(teta_rad) + S*sin(teta_rad)) + Pbola*((L + Ljib)*cos(teta_rad) + Sjib*sin(teta_rad)) + (CC1*D1 + CC2*D2 + CC3*D3 + CC4*D4)*cos(teta_rad) - Tcg*L*sin(alfa)) / ((L - N)*sin(beta))
+    Tcl = (Pl*M*cos(teta_rad) + (FLkgf + Pmoi)*(L*cos(teta_rad) + S*sin(teta_rad)) + Pbola*((L + Ljib)*cos(teta_rad) + Sjib*sin(teta_rad)) + (CC1*D1 + CC2*D2 + CC3*D3 + CC4*D4)*cos(teta_rad) - Tcg*L*sin(alfa)) / ((L - N)*sin(beta))
     Tcl *= (FLFl * Npl)
     #Componentes de Tcg e Tcl 
     Tcgx = -Tcg*(cos(pi/2 - pi/2 - teta_rad - alfa))
@@ -622,17 +609,24 @@ def mostra_modelo(
         """Otimização da tabela"""
         for i in range(tamanho):
             
-            while((Tcgot[i] > max(Tcg)*slider_penTcg/100) or (Tclot_cabo[i] > max(Tcl_cabo)*slider_penTcl/100)
+            while((Tcgot[i] > max(Tcg)*slider_penTcg/100) or (Tclot[i] > max(Tcl)*slider_penTcl/100)
             or (Eclot[i] > max(Ecl)*slider_penEcl/100) or (Momot[i] > max(Mom)*slider_penMom/100)
             or (Fhtot[i] > max(Fht)*slider_penFht/100) or (Fhdot[i] > max(Fhd)*slider_penFhd/100)
             or (Pcot[i] > Pc[i]*slider_penFator/100)):
 
                 Pcot[i] = Pcot[i] - 100
                 cvonot[i] = 1.373 - ((Pcot[i]+Pmoi)*2.204623)/(1173913) + Av #adm
+                for i in range(tamanho):
+                    if (cvonot[i] <= (1.1+Av)):
+                        cvonot[i] = 1.1+Av #adm
+                    elif (cvonot[i] >= (1.33+Av)):
+                        cvonot[i] = 1.33+Av #adm
+
                 FLkgfot = Pcot[i] * cvonot
                 Tcgot[i] = (FLkgfot[i] + Pmoi) * FLFm
-                Tclot[i] = (Pl*M*cos(teta_rad[i]) + (FLkgfot[i] + Pmoi)*L*cos(teta_rad[i]) + (CC1*D1 + CC2*D2 + 
-                CC3*D3 + CC4*D4)*cos(teta_rad[i]) - Tcgot[i]*L*sin(alfa[i])) / ((L - N)*sin(beta[i]))
+                #Tclot[i] = (Pl*M*cos(teta_rad[i]) + (FLkgfot[i] + Pmoi)*L*cos(teta_rad[i]) + (CC1*D1 + CC2*D2 + CC3*D3 + CC4*D4)*cos(teta_rad[i]) - Tcgot[i]*L*sin(alfa[i])) / ((L - N)*sin(beta[i]))
+                #Tclot[i] = (Pl*M*cos(teta_rad[i]) + (FLkgfot[i] + Pmoi)*(L*cos(teta_rad[i]) + S*sin(teta_rad[i])) + Pbola*((L + Ljib)*cos(teta_rad[i]) + Sjib*sin(teta_rad[i])) + (CC1*D1 + CC2*D2 + CC3*D3 + CC4*D4)*cos(teta_rad[i]) - Tcg[i]*L*sin(alfa[i])) / ((L - N)*sin(beta[i]))
+                Tclot[i] = (Pl*M*cos(teta_rad[i]) + (FLkgfot[i] + Pmoi)*(L*cos(teta_rad[i]) + S*sin(teta_rad[i])) + Pbola*((L + Ljib)*cos(teta_rad[i]) + Sjib*sin(teta_rad[i])) + (CC1*D1 + CC2*D2 + CC3*D3 + CC4*D4)*cos(teta_rad[i]) - Tcgot[i]*L*sin(alfa[i])) / ((L - N)*sin(beta[i]))
                 Tclot_cabo[i] = Tclot[i] * FLFl
                 Tcgxot[i] = -Tcgot[i]*(cos(teta_rad[i]-alfa[i]))
                 Tcgyot[i] = -Tcgot[i]*cos(pi/2-teta_rad[i]+alfa[i])
@@ -707,6 +701,7 @@ def mostra_modelo(
         '[Gráfico] Raio':r,
         '[Gráfico] Sustentação da lança':Tcl,
         '[Gráfico] cvon':cvon,
+        '[Gráfico] cvonot':cvonot,
         '[Gráfico] Momento':Mom,
         '[Gráfico] Esforço nas hastes traseiras do cav.':Fht,
         '[Gráfico] Esforço nas hastes dianteiras do cav.':Fhd,
@@ -730,6 +725,14 @@ def mostra_modelo(
         '[Gráfico] teta':teta,
         '[Gráfico] Capacidade Estática Orig. x Otim.':Pcot,
     }
+
+    resultados = pd.DataFrame({
+        'teta':teta,
+        'Pc':Pc,
+        'Pcot':Pcot
+        })
+    
+    resultados.to_csv('resultado.csv',sep=',')
 
     eixo_x = teta
     label_x = 'Ângulo da Lança (°)'
@@ -809,48 +812,6 @@ def update_output(value):
     [dash.dependencies.Input('slider_Vh', 'value')])
 def update_output2(value):
     return 'Vh = {}ft/s'.format(value)
-
-@app.callback(
-    dash.dependencies.Output('slider_penTcg_out', 'children'),
-    [dash.dependencies.Input('slider_penTcg', 'value')])
-def update_output3(value):
-    return '{}%'.format(value)
-
-@app.callback(
-    dash.dependencies.Output('slider_penTcl_out', 'children'),
-    [dash.dependencies.Input('slider_penTcl', 'value')])
-def update_output4(value):
-    return '{}%'.format(value)
-
-@app.callback(
-    dash.dependencies.Output('slider_penEcl_out', 'children'),
-    [dash.dependencies.Input('slider_penEcl', 'value')])
-def update_output5(value):
-    return '{}%'.format(value)
-
-@app.callback(
-    dash.dependencies.Output('slider_penMom_out', 'children'),
-    [dash.dependencies.Input('slider_penMom', 'value')])
-def update_output6(value):
-    return '{}%'.format(value)
-
-@app.callback(
-    dash.dependencies.Output('slider_penFht_out', 'children'),
-    [dash.dependencies.Input('slider_penFht', 'value')])
-def update_output7(value):
-    return '{}%'.format(value)
-
-@app.callback(
-    dash.dependencies.Output('slider_penFhd_out', 'children'),
-    [dash.dependencies.Input('slider_penFhd', 'value')])
-def update_output8(value):
-    return '{}%'.format(value)
-
-@app.callback(
-    dash.dependencies.Output('slider_penFator_out', 'children'),
-    [dash.dependencies.Input('slider_penFator', 'value')])
-def update_output9(value):
-    return '{}%'.format(value)
 
 if __name__ == '__main__':
     app.run_server(debug=True)
