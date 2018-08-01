@@ -622,7 +622,7 @@ def mostra_modelo(
         or (Fhtot[i] > (max(Fht)*penFht)) or (Fhdot[i] > (max(Fhd)*penFhd))
         or (Pcot[i] > (Pc[i]*penFator))):
 
-            Pcot[i] = Pcot[i] - 100
+            Pcot[i] = Pcot[i] - 10
 
             cvonot[i] = 1.373 - ((Pcot[i]+Pmoi)*2.204623)/(1173913) + Av #adm
             for i in range(tamanho):
@@ -646,62 +646,62 @@ def mostra_modelo(
             Rpxot[i] = Tcgxot[i] + Tclxot[i]
             Rpyot[i] = Tcgyot[i] + Tclyot[i] - (Pl + FLkgfot[i] + Pmoi + Pbola + CC1+CC2+CC3+CC4)
             Rpot[i] = (Rpxot[i]**2 + Rpyot[i]**2)**.5
-            gamaot[i] = arctan(abs(Rpy[i])/abs(Rpx[i]))
+            gamaot[i] = arctan(abs(Rpyot[i])/abs(Rpxot[i]))
 
             Eclot[i] = Rpot[i] * cos(gamaot[i] - teta_rad[i])
             Momot[i] = CC1*(D1*cos(teta_rad[i])+J) + CC2*(D2*cos(teta_rad[i])+J) + CC3*(D3*cos(teta_rad[i])+J) + Pl*(M*cos(teta_rad[i])+J) + FLkgfot[i]*(L*cos(teta_rad[i])+ S*sin(teta_rad[i])+J) + Pbola*((L + Ljib)*cos(teta_rad[i])) - Pcp*Dcp - Pplat*Dplat
             Fhdot[i] = (Tclot[i]*FLFl*Npl*sin(.5*pi+alfacl[i]))/(sin(pi-tetac))
             Fhtot[i] = (Tclot[i]*FLFl*Npl*sin(.5*pi-tetac+alfacl[i]))/(sin(tetac)) - Tclot[i]*FLFl
 
-            #CÁLCULOS DOS CRITÉRIOS DEFINIDOS NA API 2C
-            Vd = 0
-            Vc = 0
-            #Av = 0
-            CHA = 0
-            List = 0
-            Trim = 0
-            
-            #Hsig e gravidade em unidades imperiais
-            Hsig = Hsig *3.28083 #ft
-            grav = 32.2 #ft/s²
-            esc_UEP = radio_UEP
+    #CÁLCULOS DOS CRITÉRIOS DEFINIDOS NA API 2C
+    Vd = 0
+    Vc = 0
+    #Av = 0
+    CHA = 0
+    List = 0
+    Trim = 0
+    
+    #Hsig e gravidade em unidades imperiais
+    Hsig = Hsig *3.28083 #ft
+    grav = 32.2 #ft/s²
+    esc_UEP = radio_UEP
 
-            #APLICAÇÃO DAS FUNÇÕES
-            esc_embarc = radio_embarc
-            Vd = Funcoes.calc_Vd(esc_embarc,Hsig)
-            Vc = Funcoes.calc_Vc(esc_UEP,Hsig)
-            CHA = Funcoes.calc_CHA(esc_UEP,Hsig)
-            List = Funcoes.calc_List(esc_UEP)
-            Trim = Funcoes.calc_Trim(esc_UEP)
-            Vhmin = Funcoes.calc_Vhmin(Hsig)
+    #APLICAÇÃO DAS FUNÇÕES
+    esc_embarc = radio_embarc
+    Vd = Funcoes.calc_Vd(esc_embarc,Hsig)
+    Vc = Funcoes.calc_Vc(esc_UEP,Hsig)
+    CHA = Funcoes.calc_CHA(esc_UEP,Hsig)
+    List = Funcoes.calc_List(esc_UEP)
+    Trim = Funcoes.calc_Trim(esc_UEP)
+    Vhmin = Funcoes.calc_Vhmin(Hsig)
 
-            Vh = slider_Vh
+    Vh = slider_Vh
 
-            Vr = Vh + (Vd**2+Vc**2)**.5
+    Vr = Vh + (Vd**2+Vc**2)**.5
 
-            #CÁLCULOS DE RIGIDEZ
-            El = float(In_El)
-            Em = float(In_Ecm)
-            Ep = float(In_Ep)
-            Alt = slider_H
+    #CÁLCULOS DE RIGIDEZ
+    El = float(In_El)
+    Em = float(In_Ecm)
+    Ep = float(In_Ep)
+    Alt = slider_H
 
-            Lclan = Lcl - Lpend #m
-            kcabolan = (1/9.81) * Npl * El*(1e6) * (.66*.25*(pi*Dcabolan**2)/Lclan) #kgf/m
-            kcabopend = (1/9.81) * Npend * Ep*(1e6) * (.66*.25*(pi*Dcabopend**2)/Lpend) #kgf/m
-            Htip = Alt +L*sin(teta_rad) #m
-            Acb = (.77*.25*(pi*Dcabomoi**2))
+    Lclan = Lcl - Lpend #m
+    kcabolan = (1/9.81) * Npl * El*(1e6) * (.66*.25*(pi*Dcabolan**2)/Lclan) #kgf/m
+    kcabopend = (1/9.81) * Npend * Ep*(1e6) * (.66*.25*(pi*Dcabopend**2)/Lpend) #kgf/m
+    Htip = Alt +L*sin(teta_rad) #m
+    Acb = (.77*.25*(pi*Dcabomoi**2))
 
-            ksustlan = (kcabopend*kcabolan)/(kcabopend+kcabolan) #kgf/m
+    ksustlan = (kcabopend*kcabolan)/(kcabopend+kcabolan) #kgf/m
 
-            Alan = 0
+    Alan = 0
 
-            if (tipocorda == "C"):
-                Alan = pi * (Dc**2 - (Dc-2*t)**2) / 4 #m²
-                #print(Alan)
-            elif (tipocorda == "Q"):
-                Alan = Dc**2 - (Dc - t)**2 #m²
-            elif (tipocorda == "L"):
-                Alan = Dc * 2 * t - t**2 #m²
+    if (tipocorda == "C"):
+        Alan = pi * (Dc**2 - (Dc-2*t)**2) / 4 #m²
+        #print(Alan)
+    elif (tipocorda == "Q"):
+        Alan = Dc**2 - (Dc - t)**2 #m²
+    elif (tipocorda == "L"):
+        Alan = Dc * 2 * t - t**2 #m²
 
     eixo_y = {
         '[Gráfico] Ângulo alfa':rad2deg(alfa),
