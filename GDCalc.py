@@ -640,7 +640,7 @@ def mostra_modelo(
             Tclot[i] = (Pl*M*cos(teta_rad[i]) + (FLkgfot[i] + Pmoi)*(L*cos(teta_rad[i]) + S*sin(teta_rad[i])) + Pbola*((L + Ljib)*cos(teta_rad[i]) + Sjib*sin(teta_rad[i])) + (CC1*D1 + CC2*D2 + CC3*D3 + CC4*D4)*cos(teta_rad[i]) - Tcgot[i]*L*sin(alfa[i])) / ((L - N)*sin(beta[i]))
             Tclot[i] *= (FLFl * Npl)
 
-            Tclot_cabo[i] = Tclot[i] * FLFl
+            Tclot_cabo[i] = Tclot[i] / Npl
             Tcgxot[i] = -Tcgot[i]*(cos(pi/2 - pi/2 - teta_rad[i] - alfa[i]))
             Tcgyot[i] = Tcgot[i]*(sin(pi/2 - pi/2 - teta_rad[i] - alfa[i]))
             Tclxot[i] = -Tclot[i]*(cos(pi/2 - pi/2 - teta_rad[i] - beta[i]))
