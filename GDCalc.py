@@ -617,17 +617,17 @@ def mostra_modelo(
     #else:
     """Otimização da tabela"""
     for i in range(tamanho):
-        #print(i,(Tcgot[i] > (max(Tcg)*penTcg)) or (Tclot[i] > (max(Tcl)*penTcl)) or (Eclot[i] > (max(Ecl)*penEcl)) or (Momot[i] > (max(Mom)*penMom)) or (Fhtot[i] > (max(Fht)*penFht)) or (Fhdot[i] > (max(Fhd)*penFhd)) or (Pcot[i] > (Pc[i]*penFator)), cont)
+        print(i,(Tcgot[i] > (max(Tcg)*penTcg)) or (Tclot[i] > (max(Tcl)*penTcl)) or (Eclot[i] > (max(Ecl)*penEcl)) or (Momot[i] > (max(Mom)*penMom)) or (Fhtot[i] > (max(Fht)*penFht)) or (Fhdot[i] > (max(Fhd)*penFhd)) or (Pcot[i] > (Pc[i]*penFator)), cont)
 
-        while((Tcgot[i] < (max(Tcg)*penTcg)) and (Tclot[i] < (max(Tcl)*penTcl)) and (Eclot[i] < (max(Ecl)*penEcl)) and (Momot[i] < (max(Mom)*penMom)) and (Fhtot[i] < (max(Fht)*penFht)) and (Fhdot[i] < (max(Fhd)*penFhd)) and (Pcot[i] < (Pc[i]*penFator))):
-            #print(Pcot[i])
+        while((Tcgot[i] > (max(Tcg)*penTcg)) or (Tclot[i] > (max(Tcl)*penTcl)) or (Eclot[i] > (max(Ecl)*penEcl)) or (Momot[i] > (max(Mom)*penMom)) or (Fhtot[i] > (max(Fht)*penFht)) or (Fhdot[i] > (max(Fhd)*penFhd)) or (Pcot[i] > (Pc[i]*penFator))):
 
+            Pcot[i] -= 100
+            
             cvonot[i] = 1.373 - ((Pcot[i]+Pmoi)*2.204623)/(1173913) + Av #adm
-            for i in range(tamanho):
-                if (cvonot[i] <= (1.1+Av)):
-                    cvonot[i] = 1.1+Av #adm
-                elif (cvonot[i] >= (1.33+Av)):
-                    cvonot[i] = 1.33+Av #adm
+            if (cvonot[i] <= (1.1+Av)):
+                cvonot[i] = 1.1+Av #adm
+            elif (cvonot[i] >= (1.33+Av)):
+                cvonot[i] = 1.33+Av #adm
 
             FLkgfot[i] = (Pcot[i] + Pmoi) * cvon[i]
 
@@ -648,8 +648,6 @@ def mostra_modelo(
             
             Fhdot[i] = Eslot[i] * cos(alfacl[i]) / sin(tetac)
             Fhtot[i] = Eslot[i] * sin(alfacl[i]) + Fhdot[i] * cos(tetac) - Tclot[i]
-
-            Pcot[i] -= 100
 
             cont += 1
 
