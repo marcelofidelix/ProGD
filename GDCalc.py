@@ -478,10 +478,11 @@ def mostra_modelo(
     L = df.loc[combo_modelos]['L']
     Pmoi = df.loc[combo_modelos]['Pmoi']
     tetac = radians(df.loc[combo_modelos]['tetac'])
+
     teta_rad = radians(teta)
     
     #Cálculo do raio
-    r = J + L * cos(teta_rad)
+    r = J + L * cos(teta_rad) + S * sin(teta_rad)
 
     #Tamanho dos vetores
     tamanho = len(teta)
@@ -520,64 +521,64 @@ def mostra_modelo(
             cvon[i] = 1.33+Av #adm
 
     #Factored Load
-    FLkgf = Pc * cvon
+    FLkgf = (Pc + Pmoi) * cvon
 
     #Parâmetros geométricos
-    Dg = ((H)**2+(V+G/2)**2)**.5
-    tetag = arctan((V+(G/2))/H)
-    Lcg = (Dg**2 + L**2 - 2 * Dg * L * cos (pi - teta_rad - tetag))**.5
-    alfa = arcsin((Dg*sin(pi - teta_rad - tetag))/Lcg)
+    Dg = (H**2 + (V + G/2)**2)**.5
+    tetag = arctan((V + G/2) / H)
+    Lcg = (Dg**2 + L**2 - 2 * L * cos(pi - teta_rad - tetag))**.5
+    alfa = arcsin((Dg * sin(pi - teta_rad - tetag)) / Lcg)
 
     #Para guindastes com guincho de lança na lança
     if (H < .01 and V < .01 and G < .01):
         for i in range(tamanho):
             Lcg[i] = L #Considera o guincho de lança no pino do pé
         alfa = 0 * teta_rad #Anula o vetor alfa
+
     Dl = (a**2 + b**2)**.5
-    tetal = arctan(b/a)
-    Lcl = (Dl**2 + (L-N)**2 - 2 * Dl * (L-N) * cos (pi - teta_rad - tetal))**.5
-    beta = arcsin((Dl*sin(pi - teta_rad - tetal))/Lcl)
+    tetal = arctan(b / a)
+    Lcl = (Dl**2 + (L-N)**2 - 2 * Dl * (L-N) * cos(pi - teta_rad - tetal))**.5
+    beta = arcsin((Dl * sin(pi - teta_rad - tetal)) / Lcl)
 
     #Cálculo do Fast Line Factor
-    Kb = 0
+    K = 0
     if radio_mancal=='Rolamento':
-        Kb = 1.04
+        K = 1.04
     else:
-        Kb = 1.09
-    FLFl = 1/(Npl*((Kb**Npl - 1) / ((Kb**Nrl) * Npl * (Kb - 1))))
-    FLFm = 1/(Npm*((Kb**Npm - 1) / ((Kb**Nrm) * Npm * (Kb - 1))))
+        K = 1.09
+    
+    Efm = (K**Npm - 1) / (K**Nrm * Npm * (K - 1))
+    Efl = (K**Npl - 1) / (K**Nrl * Npl * (K - 1))
+
+    FLFm = 1 / (Npm * Efm)
+    FLFl = 1 / (Npl * Efl)
+
+    #Raio do jib
+    rjib = r + Ljib * cos(teta_rad) + Sjib * sin(teta_rad)
 
     #Cálculo do esforço no cabo do moitão
-    Tcg = (FLkgf + Pmoi)* FLFm
+    Tcg = FLkgf * FLFm
 
     #Cálculo de esforço no cabo da lança
-    Tcl = (Pl*M*cos(teta_rad) + (FLkgf + Pmoi)*(L*cos(teta_rad) + S*sin(teta_rad)) + Pbola*((L + Ljib)*cos(teta_rad) + Sjib*sin(teta_rad)) + (CC1*D1 + CC2*D2 + CC3*D3 + CC4*D4)*cos(teta_rad) - Tcg*L*sin(alfa)) / ((L - N)*sin(beta))
-    Tcl *= (FLFl * Npl)
-    #Componentes de Tcg e Tcl 
-    Tcgx = -Tcg*(cos(pi/2 - pi/2 - teta_rad - alfa))
-    #Tcgy = -Tcg*cos(pi/2 - teta_rad + alfa)
-    Tclx = -Tcl*(cos(pi/2 - pi/2 - teta_rad - beta))
-    #Tcly = -Tcl*cos(pi/2 - teta_rad + beta)
-
-    Tcgy = Tcg*(sin(pi/2 - pi/2 - teta_rad - alfa))
-    Tcly = Tcl*(sin(pi/2 - pi/2 - teta_rad - beta))
+    Esl = (Pl * M * cos(teta_rad) + FLkgf * (L * cos(teta_rad)) + Pbola * (L + Ljib) * cos(teta_rad) + (CC1*D1 + CC2*D2 + CC3*D3) * cos(teta_rad) - Tcg * L * sin(alfa)) / ((L - N) * sin(beta))
+    Tcl = Esl * FLFl
 
     #Reações no pino do pé da lança
-    Rpx = Tcgx + Tclx
-    Rpy = Tcgy + Tcly - (Pl + FLkgf + Pmoi + Pbola + CC1+CC2+CC3+CC4)
+    Rpx = Esl * cos(beta) + Tcg * cos(alfa) + ((CC1+CC2+CC3) + Pl + FLkgf + Pbola) * sin(teta_rad)
+    Rpy = (CC1+CC2+CC3+ Pl + FLkgf + Pbola) * cos(teta_rad) - Esl * sin(beta) - Tcg * sin(alfa)
     Rp = (Rpx**2 + Rpy**2)**.5
     gama = arctan(abs(Rpy)/abs(Rpx))
 
     """Esforço de compressão da lança"""
-    Ecl = Rp * cos(gama - teta_rad)
+    Ecl = Rp * cos(gama)
 
     """Momento"""
-    Mom = CC1*(D1*cos(teta_rad)+J) + CC2*(D2*cos(teta_rad)+J) + CC3*(D3*cos(teta_rad)+J) + Pl*(M*cos(teta_rad)+J) + (FLkgf+Pmoi)*(L*cos(teta_rad)+S*sin(teta_rad)+J) + Pbola*((L + Ljib)*cos(teta_rad) + Sjib*sin(teta_rad)) - Pcp*Dcp - Pplat*Dplat
+    Mom = (J + D1*cos(teta_rad))*CC1 + (J + D2 * cos(teta_rad))*CC2 + (J + D3 * cos(teta_rad)) * CC3 + Pl * (J + M * cos(teta_rad)) + FLkgf * r - Pplat * Dplat - Pcp * Dcp
     
     """Cavalete"""
-    alfacl = teta_rad - beta
-    Fhd = (Tcl*FLFl*Npl*sin(.5*pi+alfacl))/(sin(pi-tetac))
-    Fht = (Tcl*FLFl*Npl*sin(.5*pi-tetac+alfacl))/(sin(tetac)) - Tcl*FLFl
+    alfacl = teta_rad + tetal + tetac - beta - pi/2
+    Fhd = Esl * cos(alfacl) / sin(tetac)
+    Fht = Esl * sin(alfacl) + Fhd * cos(tetac) - Tcl
 
     """Vetores ótimos"""
     Pcot = copy(Pc)
@@ -589,10 +590,10 @@ def mostra_modelo(
     Momot = copy(Mom)
     Fhdot = copy(Fhd)
     Fhtot = copy(Fht)
-    Tcgxot = copy(Tcgx)
-    Tcgyot = copy(Tcgy)
-    Tclxot = copy(Tclx)
-    Tclyot = copy(Tcly)
+    #Tcgxot = copy(Tcgx)
+    #Tcgyot = copy(Tcgy)
+    #Tclxot = copy(Tclx)
+    #Tclyot = copy(Tcly)
     Rpxot = copy(Rpx)
     Rpyot = copy(Rpy)
     Rpot = copy(Rp)
@@ -641,12 +642,12 @@ def mostra_modelo(
             Tclot[i] *= (FLFl * Npl)
 
             Tclot_cabo[i] = Tclot[i] / Npl
-            Tcgxot[i] = -Tcgot[i]*(cos(pi/2 - pi/2 - teta_rad[i] - alfa[i]))
-            Tcgyot[i] = Tcgot[i]*(sin(pi/2 - pi/2 - teta_rad[i] - alfa[i]))
-            Tclxot[i] = -Tclot[i]*(cos(pi/2 - pi/2 - teta_rad[i] - beta[i]))
-            Tclyot[i] = Tclot[i]*(sin(pi/2 - pi/2 - teta_rad[i] - beta[i]))
-            Rpxot[i] = Tcgxot[i] + Tclxot[i]
-            Rpyot[i] = Tcgyot[i] + Tclyot[i] - (Pl + FLkgfot[i] + Pmoi + Pbola + CC1+CC2+CC3+CC4)
+            #Tcgxot[i] = -Tcgot[i]*(cos(pi/2 - pi/2 - teta_rad[i] - alfa[i]))
+            #Tcgyot[i] = Tcgot[i]*(sin(pi/2 - pi/2 - teta_rad[i] - alfa[i]))
+            #Tclxot[i] = -Tclot[i]*(cos(pi/2 - pi/2 - teta_rad[i] - beta[i]))
+            #Tclyot[i] = Tclot[i]*(sin(pi/2 - pi/2 - teta_rad[i] - beta[i]))
+            #Rpxot[i] = Tcgxot[i] + Tclxot[i]
+            #Rpyot[i] = Tcgyot[i] + Tclyot[i] - (Pl + FLkgfot[i] + Pmoi + Pbola + CC1+CC2+CC3+CC4)
             Rpot[i] = (Rpxot[i]**2 + Rpyot[i]**2)**.5
             gamaot[i] = arctan(abs(Rpyot[i])/abs(Rpxot[i]))
 
@@ -710,18 +711,14 @@ def mostra_modelo(
         '[Gráfico] Ângulo beta':rad2deg(beta),
         '[Gráfico] Capacidade Estática':Pc,
         '[Gráfico] Cabo do sistema principal':Tcg,
-        '[Gráfico] Cabo de lança':Tcl*FLFl,
+        '[Gráfico] Cabo de lança':Tcl,
         '[Gráfico] Raio':r,
-        '[Gráfico] Sustentação da lança':Tcl,
+        '[Gráfico] Sustentação da lança':Esl,
         '[Gráfico] cvon':cvon,
         '[Gráfico] cvonot':cvonot,
         '[Gráfico] Momento':Mom,
         '[Gráfico] Esforço nas hastes traseiras do cav.':Fht,
         '[Gráfico] Esforço nas hastes dianteiras do cav.':Fhd,
-        '[Gráfico] Tcgx':Tcgx,
-        '[Gráfico] Tcgy':Tcgy,
-        '[Gráfico] Tclx':Tclx,
-        '[Gráfico] Tcly':Tcly,
         '[Gráfico] Rpx':Rpx,         
         '[Gráfico] Rpy':Rpy,         
         '[Gráfico] gama - teta':degrees(gama) - teta,
