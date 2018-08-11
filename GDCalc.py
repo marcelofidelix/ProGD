@@ -616,13 +616,12 @@ def mostra_modelo(
     else:
         """Otimização da tabela"""
         for i in range(tamanho):
-            #print(slider_penFator)
-            while((Tcgot[i] > (max(Tcg)*penTcg)) or (Tclot[i] > (max(Tcl)*penTcl))
-            or (Eclot[i] > (max(Ecl)*penEcl)) or (Momot[i] > (max(Mom)*penMom))
-            or (Fhtot[i] > (max(Fht)*penFht)) or (Fhdot[i] > (max(Fhd)*penFhd))
-            or (Pcot[i] > (Pc[i]*penFator))):
-                #print(penFator)
-                Pcot[i] = Pcot[i] - 10
+            print((Tcgot[i] > (max(Tcg)*penTcg)) or (Tclot[i] > (max(Tcl)*penTcl)) or (Eclot[i] > (max(Ecl)*penEcl)) or (Momot[i] > (max(Mom)*penMom)) or (Fhtot[i] > (max(Fht)*penFht)) or (Fhdot[i] > (max(Fhd)*penFhd)) or (Pcot[i] > (Pc[i]*penFator)))
+
+            while((Tcgot[i] > (max(Tcg)*penTcg)) or (Tclot[i] > (max(Tcl)*penTcl)) or (Eclot[i] > (max(Ecl)*penEcl)) or (Momot[i] > (max(Mom)*penMom)) or (Fhtot[i] > (max(Fht)*penFht)) or (Fhdot[i] > (max(Fhd)*penFhd)) or (Pcot[i] > (Pc[i]*penFator))):
+                #print(Pcot[i])
+                
+                #Pcot[i] = Pcot[i] - 100
 
                 cvonot[i] = 1.373 - ((Pcot[i]+Pmoi)*2.204623)/(1173913) + Av #adm
                 for i in range(tamanho):
@@ -650,6 +649,8 @@ def mostra_modelo(
                 
                 Fhdot[i] = Eslot[i] * cos(alfacl[i]) / sin(tetac)
                 Fhtot[i] = Eslot[i] * sin(alfacl[i]) + Fhdot[i] * cos(tetac) - Tclot[i]
+
+                Pcot[i] = Pcot[i] - 100
 
     #CÁLCULOS DOS CRITÉRIOS DEFINIDOS NA API 2C
     Vd = 0
