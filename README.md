@@ -10,7 +10,7 @@ The UI is built on the Dash framework.
 
 Required python libraries:
 
-```
+```shell
 pip install dash
 pip install dash_core_components
 pip install dash_html_components

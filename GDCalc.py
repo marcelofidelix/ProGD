@@ -46,6 +46,7 @@ lista_param = ['[Gráfico] Ângulo alfa',
 '[Gráfico] Sustentação da lança',
 '[Gráfico] Sustentação da lança Orig. x Otim.',
 '[Gráfico] alfacl',
+'[Gráfico] Rp',
 '[Gráfico] Rpx',
 '[Gráfico] Rpy',         
 '[Gráfico] gama_teta',
@@ -587,16 +588,11 @@ def mostra_modelo(
     Pcot = copy(Pc)
     Tcgot = copy(Tcg)
     Tclot = copy(Tcl)
-    Tcl_cabo = copy(Tcl * FLFl)
-    Tclot_cabo = copy(Tcl_cabo)
+    Eslot = copy(Esl)
     Eclot = copy(Ecl)
     Momot = copy(Mom)
     Fhdot = copy(Fhd)
     Fhtot = copy(Fht)
-    #Tcgxot = copy(Tcgx)
-    #Tcgyot = copy(Tcgy)
-    #Tclxot = copy(Tclx)
-    #Tclyot = copy(Tcly)
     Rpxot = copy(Rpx)
     Rpyot = copy(Rpy)
     Rpot = copy(Rp)
@@ -611,54 +607,50 @@ def mostra_modelo(
     penFht = slider_penFht/100
     penFhd = slider_penFhd/100
     penFator = slider_penFator/100
-    '''
+
     """Evita que o programa entre sempre no loop de otimização, o que o deixa lento"""
     if ((slider_penTcg == 100) and (slider_penTcl == 100) and (slider_penEcl == 100) and (slider_penMom == 100) and 
     (slider_penFht == 100) and (slider_penFhd == 100) and (slider_penFator == 100)):
         pass
     
     else:
-    '''
-    #print(slider_penFator)
-    """Otimização da tabela"""
-    for i in range(tamanho):
-        #print(slider_penFator)
-        while((Tcgot[i] > (max(Tcg)*penTcg)) or (Tclot[i] > (max(Tcl)*penTcl))
-        or (Eclot[i] > (max(Ecl)*penEcl)) or (Momot[i] > (max(Mom)*penMom))
-        or (Fhtot[i] > (max(Fht)*penFht)) or (Fhdot[i] > (max(Fhd)*penFhd))
-        or (Pcot[i] > (Pc[i]*penFator))):
-            #print(penFator)
-            Pcot[i] = Pcot[i] - 10
+        """Otimização da tabela"""
+        for i in range(tamanho):
+            #print(slider_penFator)
+            while((Tcgot[i] > (max(Tcg)*penTcg)) or (Tclot[i] > (max(Tcl)*penTcl))
+            or (Eclot[i] > (max(Ecl)*penEcl)) or (Momot[i] > (max(Mom)*penMom))
+            or (Fhtot[i] > (max(Fht)*penFht)) or (Fhdot[i] > (max(Fhd)*penFhd))
+            or (Pcot[i] > (Pc[i]*penFator))):
+                #print(penFator)
+                Pcot[i] = Pcot[i] - 10
 
-            cvonot[i] = 1.373 - ((Pcot[i]+Pmoi)*2.204623)/(1173913) + Av #adm
-            for i in range(tamanho):
-                if (cvonot[i] <= (1.1+Av)):
-                    cvonot[i] = 1.1+Av #adm
-                elif (cvonot[i] >= (1.33+Av)):
-                    cvonot[i] = 1.33+Av #adm
+                cvonot[i] = 1.373 - ((Pcot[i]+Pmoi)*2.204623)/(1173913) + Av #adm
+                for i in range(tamanho):
+                    if (cvonot[i] <= (1.1+Av)):
+                        cvonot[i] = 1.1+Av #adm
+                    elif (cvonot[i] >= (1.33+Av)):
+                        cvonot[i] = 1.33+Av #adm
 
-            FLkgfot[i] = Pcot[i] * cvonot[i]
+                FLkgfot[i] = (Pcot[i] + Pmoi) * cvon[i]
 
-            Tcgot[i] = (FLkgfot[i] + Pmoi)* FLFm
+                Tcgot[i] = FLkgfot[i] * FLFm
 
-            Tclot[i] = (Pl*M*cos(teta_rad[i]) + (FLkgfot[i] + Pmoi)*(L*cos(teta_rad[i]) + S*sin(teta_rad[i])) + Pbola*((L + Ljib)*cos(teta_rad[i]) + Sjib*sin(teta_rad[i])) + (CC1*D1 + CC2*D2 + CC3*D3 + CC4*D4)*cos(teta_rad[i]) - Tcgot[i]*L*sin(alfa[i])) / ((L - N)*sin(beta[i]))
-            Tclot[i] *= (FLFl * Npl)
+                Eslot[i] = (Pl * M * cos(teta_rad[i]) + FLkgfot[i] * (L * cos(teta_rad[i])) + Pbola * (L + Ljib) * cos(teta_rad[i]) + (CC1*D1 + CC2*D2 + CC3*D3) * cos(teta_rad[i]) - Tcgot[i] * L * sin(alfa[i])) / ((L - N) * sin(beta[i]))
+                Tclot[i] = Eslot[i] * FLFl
 
-            Tclot_cabo[i] = Tclot[i] / Npl
-            #Tcgxot[i] = -Tcgot[i]*(cos(pi/2 - pi/2 - teta_rad[i] - alfa[i]))
-            #Tcgyot[i] = Tcgot[i]*(sin(pi/2 - pi/2 - teta_rad[i] - alfa[i]))
-            #Tclxot[i] = -Tclot[i]*(cos(pi/2 - pi/2 - teta_rad[i] - beta[i]))
-            #Tclyot[i] = Tclot[i]*(sin(pi/2 - pi/2 - teta_rad[i] - beta[i]))
-            #Rpxot[i] = Tcgxot[i] + Tclxot[i]
-            #Rpyot[i] = Tcgyot[i] + Tclyot[i] - (Pl + FLkgfot[i] + Pmoi + Pbola + CC1+CC2+CC3+CC4)
-            Rpot[i] = (Rpxot[i]**2 + Rpyot[i]**2)**.5
-            gamaot[i] = arctan(abs(Rpyot[i])/abs(Rpxot[i]))
+                Rpxot[i] = Eslot[i] * cos(beta[i]) + Tcgot[i] * cos(alfa[i]) + ((CC1+CC2+CC3) + Pl + FLkgfot[i] + Pbola) * sin(teta_rad[i])
+                Rpyot[i] = (CC1+CC2+CC3+ Pl + FLkgfot[i] + Pbola) * cos(teta_rad[i]) - Eslot[i] * sin(beta[i]) - Tcgot[i] * sin(alfa[i])
 
-            Eclot[i] = Rpot[i] * cos(gamaot[i] - teta_rad[i])
-            Momot[i] = CC1*(D1*cos(teta_rad[i])+J) + CC2*(D2*cos(teta_rad[i])+J) + CC3*(D3*cos(teta_rad[i])+J) + Pl*(M*cos(teta_rad[i])+J) + FLkgfot[i]*(L*cos(teta_rad[i])+ S*sin(teta_rad[i])+J) + Pbola*((L + Ljib)*cos(teta_rad[i])) - Pcp*Dcp - Pplat*Dplat
-            Fhdot[i] = (Tclot[i]*FLFl*Npl*sin(.5*pi+alfacl[i]))/(sin(pi-tetac))
-            Fhtot[i] = (Tclot[i]*FLFl*Npl*sin(.5*pi-tetac+alfacl[i]))/(sin(tetac)) - Tclot[i]*FLFl
-    #print(Pcot)
+                Rpot[i] = (Rpxot[i]**2 + Rpyot[i]**2)**.5
+                gamaot[i] = arctan(abs(Rpyot[i])/abs(Rpxot[i]))
+
+                Eclot[i] = Rpot[i] * cos(gama[i])
+
+                Momot[i] = (J + D1 * cos(teta_rad[i])) * CC1 + (J + D2 * cos(teta_rad[i])) * CC2 + (J + D3 * cos(teta_rad[i])) * CC3 + Pl * (J + M * cos(teta_rad[i])) + FLkgfot[i] * r[i] - Pplat * Dplat - Pcp * Dcp
+                
+                Fhdot[i] = Eslot[i] * cos(alfacl[i]) / sin(tetac)
+                Fhtot[i] = Eslot[i] * sin(alfacl[i]) + Fhdot[i] * cos(tetac) - Tclot[i]
+
     #CÁLCULOS DOS CRITÉRIOS DEFINIDOS NA API 2C
     Vd = 0
     Vc = 0
@@ -722,9 +714,10 @@ def mostra_modelo(
         '[Gráfico] Momento':Mom,
         '[Gráfico] Esforço nas hastes traseiras do cav.':Fht,
         '[Gráfico] Esforço nas hastes dianteiras do cav.':Fhd,
+        '[Gráfico] Rp':Rp,
         '[Gráfico] Rpx':Rpx,         
         '[Gráfico] Rpy':Rpy,         
-        '[Gráfico] gama - teta':degrees(gama) - teta,
+        #'[Gráfico] gama_teta':degrees(gama) - teta,
         '[Gráfico] alfacl':degrees(alfacl),
         '[Gráfico] Cabo do sistema principal Orig. x Otim.':Tcgot,
         '[Gráfico] Cabo de lança Orig. x Otim.':Tclot*FLFl,
