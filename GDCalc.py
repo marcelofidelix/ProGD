@@ -5,7 +5,7 @@ from dash.dependencies import Output, Input
 import plotly.graph_objs as go
 import pandas as pd
 import ast
-from numpy import radians, cos, array, arctan, arcsin, sin, pi, rad2deg, degrees, copy
+from numpy import radians, cos, array, arctan, arcsin, sin, pi, rad2deg, degrees, copy, clip
 import Funcoes
 
 app = dash.Dash()
@@ -650,6 +650,41 @@ def mostra_modelo(
             Fhtot[i] = Eslot[i] * sin(alfacl[i]) + Fhdot[i] * cos(tetac) - Tclot[i]
 
             cont += 1
+    
+    #Como o valor fo esforço parece bugado quanto otimiza-se a tabela, vamos recalcular todos os esforços baseado no Pcot
+    #Tcgot = clip(Tcg,0,max(Tcg)*penTcg)
+    #Tclot = clip(Tcl,0,max(Tcl)*penTcl)
+    '''
+    FLkgfot = (Pcot + Pmoi) * cvonot
+
+    #Cálculo do esforço no cabo do moitão
+    Tcgot = FLkgfot * FLFm
+
+    #Cálculo de esforço no cabo da lança
+    Eslot = (Pl * M * cos(teta_rad) + FLkgfot * (L * cos(teta_rad)) + Pbola * (L + Ljib) * cos(teta_rad) + (CC1*D1 + CC2*D2 + CC3*D3) * cos(teta_rad) - Tcgot * L * sin(alfa)) / ((L - N) * sin(beta))
+    Eslot = Eslot / Efl
+    Tclot = Eslot * FLFl
+
+    #Reações no pino do pé da lança
+    Rpxot = Eslot * cos(beta) + Tcgot * cos(alfa) + ((CC1+CC2+CC3) + Pl + FLkgfot + Pbola) * sin(teta_rad)
+    Rpyot = (CC1+CC2+CC3+ Pl + FLkgfot + Pbola) * cos(teta_rad) - Eslot * sin(beta) - Tcgot * sin(alfa)
+    Rpot = (Rpxot**2 + Rpyot**2)**.5
+    gamaot = arctan(abs(Rpyot)/abs(Rpxot))
+
+    """Esforço de compressão da lança"""
+    Eclot = Rpot * cos(gamaot)
+
+    """Momento"""
+    Momot = (J + D1*cos(teta_rad))*CC1 + (J + D2 * cos(teta_rad))*CC2 + (J + D3 * cos(teta_rad)) * CC3 + Pl * (J + M * cos(teta_rad)) + FLkgfot * r - Pplat * Dplat - Pcp * Dcp
+    
+    """Cavalete"""
+    Fhdot = Eslot * cos(alfacl) / sin(tetac)
+    Fhtot = Eslot * sin(alfacl) + Fhdot * cos(tetac) - Tclot
+    '''
+
+
+
+
 
     #CÁLCULOS DOS CRITÉRIOS DEFINIDOS NA API 2C
     Vd = 0
@@ -720,7 +755,7 @@ def mostra_modelo(
         #'[Gráfico] gama_teta':degrees(gama) - teta,
         '[Gráfico] alfacl':degrees(alfacl),
         '[Gráfico] Cabo do sistema principal Orig. x Otim.':Tcgot,
-        '[Gráfico] Cabo de lança Orig. x Otim.':Tclot*FLFl,
+        '[Gráfico] Cabo de lança Orig. x Otim.':Tclot,
         '[Gráfico] Sustentação da lança Orig. x Otim.':Tclot,
         '[Gráfico] Momento Orig. x Otim.':Momot,
         '[Gráfico] Esforço nas hastes traseiras do cav. Orig. x Otim.':Fhtot,
