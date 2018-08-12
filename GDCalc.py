@@ -6,6 +6,7 @@ import plotly.graph_objs as go
 import pandas as pd
 import ast
 from numpy import radians, cos, array, arctan, arcsin, sin, pi, rad2deg, degrees, copy, clip
+import numpy as np
 import Funcoes
 
 app = dash.Dash()
@@ -482,14 +483,6 @@ def mostra_modelo(
     Pmoi = df.loc[combo_modelos]['Pmoi']
     tetac = radians(df.loc[combo_modelos]['tetac'])
 
-    teta_rad = radians(teta)
-    
-    #Cálculo do raio
-    r = J + L * cos(teta_rad) + S * sin(teta_rad)
-
-    #Tamanho dos vetores
-    tamanho = len(teta)
-
     '''Cálculo do Cvon'''
     #Parâmetros que são calculados de acordo com o Hsig
     Hsig = slider_Hsig
@@ -514,75 +507,162 @@ def mostra_modelo(
         if (CHA < .03):
             CHA = .03
         List, Trim = 2.5, 2.5 #Conferir!!!
-    cvon = 1.373 - ((Pc+Pmoi)*2.204623)/(1173913) + Av
-
-    #Limita o valor do Cvon
-    for i in range(tamanho):
-        if (cvon[i] <= (1.1+Av)):
-            cvon[i] = 1.1+Av #adm
-        elif (cvon[i] >= (1.33+Av)):
-            cvon[i] = 1.33+Av #adm
-
-    #Factored Load
-    FLkgf = (Pc + Pmoi) * cvon
-
-    #Parâmetros geométricos
-    Dg = (H**2 + (V + G/2)**2)**.5
-    tetag = arctan((V + G/2) / H)
-    Lcg = (Dg**2 + L**2 - 2 * L * cos(pi - teta_rad - tetag))**.5
-    alfa = arcsin((Dg * sin(pi - teta_rad - tetag)) / Lcg)
-
-    #Para guindastes com guincho de lança na lança
-    if (H < .01 and V < .01 and G < .01):
-        for i in range(tamanho):
-            Lcg[i] = L #Considera o guincho de lança no pino do pé
-        alfa = 0 * teta_rad #Anula o vetor alfa
-
-    Dl = (a**2 + b**2)**.5
-    tetal = arctan(b / a)
-    Lcl = (Dl**2 + (L-N)**2 - 2 * Dl * (L-N) * cos(pi - teta_rad - tetal))**.5
-    beta = arcsin((Dl * sin(pi - teta_rad - tetal)) / Lcl)
-
-    #Cálculo do Fast Line Factor
-    K = 0
-    if radio_mancal=='Rolamento':
-        K = 1.04
-    else:
-        K = 1.09
     
-    Efm = (K**Npm - 1) / (K**Nrm * Npm * (K - 1))
-    Efl = (K**Npl - 1) / (K**Nrl * Npl * (K - 1))
+    def func(Pc, teta):
 
-    FLFm = 1 / (Npm * Efm)
-    FLFl = 1 / (Npl * Efl)
+        teta_rad = radians(teta)
+        
+        #Cálculo do raio
+        r = J + L * cos(teta_rad) + S * sin(teta_rad)
 
-    #Raio do jib
-    rjib = r + Ljib * cos(teta_rad) + Sjib * sin(teta_rad)
+        #Tamanho dos vetores
+        if type(Pc) is np.ndarray:
+            tamanho = len(teta)
 
-    #Cálculo do esforço no cabo do moitão
-    Tcg = FLkgf * FLFm
+        #Raio do jib
+        rjib = r + Ljib * cos(teta_rad) + Sjib * sin(teta_rad)
+        
+        #Parâmetros geométricos
+        Dg = (H**2 + (V + G/2)**2)**.5
+        tetag = arctan((V + G/2) / H)
+        Lcg = (Dg**2 + L**2 - 2 * L * cos(pi - teta_rad - tetag))**.5
+        alfa = arcsin((Dg * sin(pi - teta_rad - tetag)) / Lcg)
 
-    #Cálculo de esforço no cabo da lança
-    Esl = (Pl * M * cos(teta_rad) + FLkgf * (L * cos(teta_rad)) + Pbola * (L + Ljib) * cos(teta_rad) + (CC1*D1 + CC2*D2 + CC3*D3) * cos(teta_rad) - Tcg * L * sin(alfa)) / ((L - N) * sin(beta))
-    Esl = Esl / Efl
-    Tcl = Esl * FLFl
+        #Para guindastes com guincho de lança na lança
+        if (H < .01 and V < .01 and G < .01):
+            if type(Pc) is np.ndarray:
+                for i in range(tamanho):
+                    Lcg[i] = L #Considera o guincho de lança no pino do pé
+            else:
+                Lcg = L
+            alfa = 0 * teta_rad #Anula o vetor alfa
 
-    #Reações no pino do pé da lança
-    Rpx = Esl * cos(beta) + Tcg * cos(alfa) + ((CC1+CC2+CC3) + Pl + FLkgf + Pbola) * sin(teta_rad)
-    Rpy = (CC1+CC2+CC3+ Pl + FLkgf + Pbola) * cos(teta_rad) - Esl * sin(beta) - Tcg * sin(alfa)
-    Rp = (Rpx**2 + Rpy**2)**.5
-    gama = arctan(abs(Rpy)/abs(Rpx))
+        Dl = (a**2 + b**2)**.5
+        tetal = arctan(b / a)
+        Lcl = (Dl**2 + (L-N)**2 - 2 * Dl * (L-N) * cos(pi - teta_rad - tetal))**.5
+        beta = arcsin((Dl * sin(pi - teta_rad - tetal)) / Lcl)
 
-    """Esforço de compressão da lança"""
-    Ecl = Rp * cos(gama)
+        #Cálculo do Fast Line Factor
+        K = 0
+        if radio_mancal=='Rolamento':
+            K = 1.04
+        else:
+            K = 1.09
+        
+        Efm = (K**Npm - 1) / (K**Nrm * Npm * (K - 1))
+        Efl = (K**Npl - 1) / (K**Nrl * Npl * (K - 1))
 
-    """Momento"""
-    Mom = (J + D1*cos(teta_rad))*CC1 + (J + D2 * cos(teta_rad))*CC2 + (J + D3 * cos(teta_rad)) * CC3 + Pl * (J + M * cos(teta_rad)) + FLkgf * r - Pplat * Dplat - Pcp * Dcp
+        FLFm = 1 / (Npm * Efm)
+        FLFl = 1 / (Npl * Efl)
+
+        alfacl = teta_rad + tetal + tetac - beta - pi/2
+
+
+        cvon = 1.373 - ((Pc+Pmoi)*2.204623)/(1173913) + Av
+        #Limita o valor do Cvon
+        if type(Pc) is np.ndarray:
+            for i in range(tamanho):
+                if (cvon[i] <= (1.1+Av)):
+                    cvon[i] = 1.1+Av #adm
+                elif (cvon[i] >= (1.33+Av)):
+                    cvon[i] = 1.33+Av #adm
+        else:
+            if (cvon <= (1.1+Av)):
+                cvon = 1.1+Av #adm
+            elif (cvon >= (1.33+Av)):
+                cvon = 1.33+Av #adm
+
+        #Factored Load
+        FLkgf = (Pc + Pmoi) * cvon
+
+        #Cálculo do esforço no cabo do moitão
+        Tcg = FLkgf * FLFm
+
+        #Cálculo de esforço no cabo da lança
+        Esl = (Pl * M * cos(teta_rad) + FLkgf * (L * cos(teta_rad)) + Pbola * (L + Ljib) * cos(teta_rad) + (CC1*D1 + CC2*D2 + CC3*D3) * cos(teta_rad) - Tcg * L * sin(alfa)) / ((L - N) * sin(beta))
+        Esl = Esl / Efl
+        Tcl = Esl * FLFl
+
+        #Reações no pino do pé da lança
+        Rpx = Esl * cos(beta) + Tcg * cos(alfa) + ((CC1+CC2+CC3) + Pl + FLkgf + Pbola) * sin(teta_rad)
+        Rpy = (CC1+CC2+CC3+ Pl + FLkgf + Pbola) * cos(teta_rad) - Esl * sin(beta) - Tcg * sin(alfa)
+        Rp = (Rpx**2 + Rpy**2)**.5
+        gama = arctan(abs(Rpy)/abs(Rpx))
+
+        """Esforço de compressão da lança"""
+        Ecl = Rp * cos(gama)
+
+        """Momento"""
+        Mom = (J + D1*cos(teta_rad))*CC1 + (J + D2 * cos(teta_rad))*CC2 + (J + D3 * cos(teta_rad)) * CC3 + Pl * (J + M * cos(teta_rad)) + FLkgf * r - Pplat * Dplat - Pcp * Dcp
+        
+        """Cavalete"""
+        Fhd = Esl * cos(alfacl) / sin(tetac)
+        Fht = Esl * sin(alfacl) + Fhd * cos(tetac) - Tcl
+
+        result = {}
+
+        result['teta_rad'] = teta_rad
+        result['r'] = r
+        result['rjib'] = rjib
+        result['Dg'] = Dg
+        result['tetag'] = tetag
+        result['Lcg'] = Lcg
+        result['alfa'] = alfa
+        result['Dl'] = Dl
+        result['tetal'] = tetal
+        result['Lcl'] = Lcl
+        result['beta'] = beta
+        result['K'] = K
+        result['Efm'] = Efm
+        result['Efl'] = Efl
+        result['FLFm'] = FLFm
+        result['FLFl'] = FLFl
+        result['alfacl'] = alfacl
+        result['cvon'] = cvon
+        result['FLkgf'] = FLkgf
+        result['Tcg'] = Tcg
+        result['Esl'] = Esl
+        result['Tcl'] = Tcl
+        result['Rpx'] = Rpx
+        result['Rpy'] = Rpy
+        result['Rp'] = Rp
+        result['gama'] = gama
+        result['Ecl'] = Ecl
+        result['Mom'] = Mom
+        result['Fhd'] = Fhd
+        result['Fht'] = Fht
+
+        return result
     
-    """Cavalete"""
-    alfacl = teta_rad + tetal + tetac - beta - pi/2
-    Fhd = Esl * cos(alfacl) / sin(tetac)
-    Fht = Esl * sin(alfacl) + Fhd * cos(tetac) - Tcl
+    teta_rad = func(Pc, teta)['teta_rad']
+    r = func(Pc,teta)['r']
+    rjib = func(Pc,teta)['rjib']
+    Dg = func(Pc,teta)['Dg']
+    tetag = func(Pc,teta)['tetag']
+    Lcg = func(Pc,teta)['Lcg']
+    alfa = func(Pc,teta)['alfa']
+    Dl = func(Pc,teta)['Dl']
+    tetal = func(Pc,teta)['tetal']
+    Lcl = func(Pc,teta)['Lcl']
+    beta = func(Pc,teta)['beta']
+    K = func(Pc,teta)['K']
+    Efm = func(Pc,teta)['Efm']
+    Efl = func(Pc,teta)['Efl']
+    FLFm = func(Pc,teta)['FLFm']
+    alfacl = func(Pc,teta)['alfacl']
+    cvon = func(Pc,teta)['cvon']
+    FLkgf = func(Pc,teta)['FLkgf']
+    Tcg = func(Pc,teta)['Tcg']
+    Esl = func(Pc,teta)['Esl']
+    Tcl = func(Pc,teta)['Tcl']
+    Rpx = func(Pc,teta)['Rpx']
+    Rpy = func(Pc,teta)['Rpy']
+    Rp = func(Pc,teta)['Rp']
+    gama = func(Pc,teta)['gama']
+    Ecl = func(Pc,teta)['Ecl']
+    Mom = func(Pc,teta)['Mom']
+    Fhd = func(Pc,teta)['Fhd']
+    Fht = func(Pc,teta)['Fht']
 
     """Vetores ótimos"""
     Pcot = copy(Pc)
@@ -608,7 +688,7 @@ def mostra_modelo(
     penFhd = slider_penFhd/100
     penFator = slider_penFator/100
 
-    cont = 0
+    #cont = 0
 
     #"""Evita que o programa entre sempre no loop de otimização, o que o deixa lento"""
     #if ((slider_penTcg == 100) and (slider_penTcl == 100) and (slider_penEcl == 100) and (slider_penMom == 100) and (slider_penFht == 100) and (slider_penFhd == 100) and (slider_penFator == 100)):
@@ -616,74 +696,18 @@ def mostra_modelo(
     #
     #else:
     """Otimização da tabela"""
-    for i in range(tamanho):
-        print(i,(Tcgot[i] > (max(Tcg)*penTcg)) or (Tclot[i] > (max(Tcl)*penTcl)) or (Eclot[i] > (max(Ecl)*penEcl)) or (Momot[i] > (max(Mom)*penMom)) or (Fhtot[i] > (max(Fht)*penFht)) or (Fhdot[i] > (max(Fhd)*penFhd)) or (Pcot[i] > (Pc[i]*penFator)), cont)
+    for i in range(len(Pcot)):
+        #print(i,(Tcgot[i] > (max(Tcg)*penTcg)) or (Tclot[i] > (max(Tcl)*penTcl)) or (Eclot[i] > (max(Ecl)*penEcl)) or (Momot[i] > (max(Mom)*penMom)) or (Fhtot[i] > (max(Fht)*penFht)) or (Fhdot[i] > (max(Fhd)*penFhd)) or (Pcot[i] > (Pc[i]*penFator)), cont)
 
         while((Tcgot[i] > (max(Tcg)*penTcg)) or (Tclot[i] > (max(Tcl)*penTcl)) or (Eclot[i] > (max(Ecl)*penEcl)) or (Momot[i] > (max(Mom)*penMom)) or (Fhtot[i] > (max(Fht)*penFht)) or (Fhdot[i] > (max(Fhd)*penFhd)) or (Pcot[i] > (Pc[i]*penFator))):
-
-            Pcot[i] -= 100
-            
-            cvonot[i] = 1.373 - ((Pcot[i]+Pmoi)*2.204623)/(1173913) + Av #adm
-            if (cvonot[i] <= (1.1+Av)):
-                cvonot[i] = 1.1+Av #adm
-            elif (cvonot[i] >= (1.33+Av)):
-                cvonot[i] = 1.33+Av #adm
-
-            FLkgfot[i] = (Pcot[i] + Pmoi) * cvonot[i]
-
-            Tcgot[i] = FLkgfot[i] * FLFm
-
-            Eslot[i] = (Pl * M * cos(teta_rad[i]) + FLkgfot[i] * (L * cos(teta_rad[i])) + Pbola * (L + Ljib) * cos(teta_rad[i]) + (CC1*D1 + CC2*D2 + CC3*D3) * cos(teta_rad[i]) - Tcgot[i] * L * sin(alfa[i])) / ((L - N) * sin(beta[i]))
-            Tclot[i] = Eslot[i] * FLFl
-
-            Rpxot[i] = Eslot[i] * cos(beta[i]) + Tcgot[i] * cos(alfa[i]) + ((CC1+CC2+CC3) + Pl + FLkgfot[i] + Pbola) * sin(teta_rad[i])
-            Rpyot[i] = (CC1+CC2+CC3+ Pl + FLkgfot[i] + Pbola) * cos(teta_rad[i]) - Eslot[i] * sin(beta[i]) - Tcgot[i] * sin(alfa[i])
-
-            Rpot[i] = (Rpxot[i]**2 + Rpyot[i]**2)**.5
-            gamaot[i] = arctan(abs(Rpyot[i])/abs(Rpxot[i]))
-
-            Eclot[i] = Rpot[i] * cos(gamaot[i])
-
-            Momot[i] = (J + D1 * cos(teta_rad[i])) * CC1 + (J + D2 * cos(teta_rad[i])) * CC2 + (J + D3 * cos(teta_rad[i])) * CC3 + Pl * (J + M * cos(teta_rad[i])) + FLkgfot[i] * r[i] - Pplat * Dplat - Pcp * Dcp
-            
-            Fhdot[i] = Eslot[i] * cos(alfacl[i]) / sin(tetac)
-            Fhtot[i] = Eslot[i] * sin(alfacl[i]) + Fhdot[i] * cos(tetac) - Tclot[i]
-
-            cont += 1
-    
-    #Como o valor fo esforço parece bugado quanto otimiza-se a tabela, vamos recalcular todos os esforços baseado no Pcot
-    #Tcgot = clip(Tcg,0,max(Tcg)*penTcg)
-    #Tclot = clip(Tcl,0,max(Tcl)*penTcl)
-    '''
-    FLkgfot = (Pcot + Pmoi) * cvonot
-
-    #Cálculo do esforço no cabo do moitão
-    Tcgot = FLkgfot * FLFm
-
-    #Cálculo de esforço no cabo da lança
-    Eslot = (Pl * M * cos(teta_rad) + FLkgfot * (L * cos(teta_rad)) + Pbola * (L + Ljib) * cos(teta_rad) + (CC1*D1 + CC2*D2 + CC3*D3) * cos(teta_rad) - Tcgot * L * sin(alfa)) / ((L - N) * sin(beta))
-    Eslot = Eslot / Efl
-    Tclot = Eslot * FLFl
-
-    #Reações no pino do pé da lança
-    Rpxot = Eslot * cos(beta) + Tcgot * cos(alfa) + ((CC1+CC2+CC3) + Pl + FLkgfot + Pbola) * sin(teta_rad)
-    Rpyot = (CC1+CC2+CC3+ Pl + FLkgfot + Pbola) * cos(teta_rad) - Eslot * sin(beta) - Tcgot * sin(alfa)
-    Rpot = (Rpxot**2 + Rpyot**2)**.5
-    gamaot = arctan(abs(Rpyot)/abs(Rpxot))
-
-    """Esforço de compressão da lança"""
-    Eclot = Rpot * cos(gamaot)
-
-    """Momento"""
-    Momot = (J + D1*cos(teta_rad))*CC1 + (J + D2 * cos(teta_rad))*CC2 + (J + D3 * cos(teta_rad)) * CC3 + Pl * (J + M * cos(teta_rad)) + FLkgfot * r - Pplat * Dplat - Pcp * Dcp
-    
-    """Cavalete"""
-    Fhdot = Eslot * cos(alfacl) / sin(tetac)
-    Fhtot = Eslot * sin(alfacl) + Fhdot * cos(tetac) - Tclot
-    '''
-
-
-
+            Pcot[i] -= 10
+            result_ot = func(Pcot[i], teta[i])
+            Tcgot[i] = result_ot['Tcg']
+            Tclot[i] = result_ot['Tcl']
+            Eclot[i] = result_ot['Ecl']
+            Momot[i] = result_ot['Mom']
+            Fhdot[i] = result_ot['Fhd']
+            Fhtot[i] = result_ot['Fht']
 
 
     #CÁLCULOS DOS CRITÉRIOS DEFINIDOS NA API 2C
