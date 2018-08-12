@@ -642,7 +642,7 @@ def mostra_modelo(
             Rpot[i] = (Rpxot[i]**2 + Rpyot[i]**2)**.5
             gamaot[i] = arctan(abs(Rpyot[i])/abs(Rpxot[i]))
 
-            Eclot[i] = Rpot[i] * cos(gama[i])
+            Eclot[i] = Rpot[i] * cos(gamaot[i])
 
             Momot[i] = (J + D1 * cos(teta_rad[i])) * CC1 + (J + D2 * cos(teta_rad[i])) * CC2 + (J + D3 * cos(teta_rad[i])) * CC3 + Pl * (J + M * cos(teta_rad[i])) + FLkgfot[i] * r[i] - Pplat * Dplat - Pcp * Dcp
             

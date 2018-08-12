@@ -1,5 +1,6 @@
 from numpy import radians, cos, sin, argmax, round_
-
+#import matplotlib.pylab as plt
+'''
 #Função que gera o gráfico de uma variável
 def gera_grafico(linhas,colunas,posicao,titulo,par1,par2):
     plt.subplot(linhas,colunas,posicao)
@@ -40,7 +41,7 @@ def graf_Hsig(linhas,colunas,posicao,titulo,par1,par2,par3,par4,par5,par6,par7,p
     plt.ylim(0,max(par2)*1.1)
     plt.legend(loc=0,fontsize=7)#, borderaxespad=0.)
     plt.grid()
- 
+ '''
  #Função que permite o cálculo do raio de ação
 def raio(teta, L, J, S):
 	teta_rad = radians(teta)
