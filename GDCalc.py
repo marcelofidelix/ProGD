@@ -629,7 +629,7 @@ def mostra_modelo(
             elif (cvonot[i] >= (1.33+Av)):
                 cvonot[i] = 1.33+Av #adm
 
-            FLkgfot[i] = (Pcot[i] + Pmoi) * cvon[i]
+            FLkgfot[i] = (Pcot[i] + Pmoi) * cvonot[i]
 
             Tcgot[i] = FLkgfot[i] * FLFm
 
