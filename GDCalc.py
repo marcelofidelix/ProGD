@@ -688,27 +688,24 @@ def mostra_modelo(
     penFhd = slider_penFhd/100
     penFator = slider_penFator/100
 
-    #cont = 0
+    """Evita que o programa entre sempre no loop de otimização, o que o deixa lento"""
+    if ((slider_penTcg == 100) and (slider_penTcl == 100) and (slider_penEcl == 100) and (slider_penMom == 100) and (slider_penFht == 100) and (slider_penFhd == 100) and (slider_penFator == 100)):
+        pass
+    
+    else:
+        """Otimização da tabela"""
+        for i in range(len(Pcot)):
+            #print(i,(Tcgot[i] > (max(Tcg)*penTcg)) or (Tclot[i] > (max(Tcl)*penTcl)) or (Eclot[i] > (max(Ecl)*penEcl)) or (Momot[i] > (max(Mom)*penMom)) or (Fhtot[i] > (max(Fht)*penFht)) or (Fhdot[i] > (max(Fhd)*penFhd)) or (Pcot[i] > (Pc[i]*penFator)), cont)
 
-    #"""Evita que o programa entre sempre no loop de otimização, o que o deixa lento"""
-    #if ((slider_penTcg == 100) and (slider_penTcl == 100) and (slider_penEcl == 100) and (slider_penMom == 100) and (slider_penFht == 100) and (slider_penFhd == 100) and (slider_penFator == 100)):
-    #    pass
-    #
-    #else:
-    """Otimização da tabela"""
-    for i in range(len(Pcot)):
-        #print(i,(Tcgot[i] > (max(Tcg)*penTcg)) or (Tclot[i] > (max(Tcl)*penTcl)) or (Eclot[i] > (max(Ecl)*penEcl)) or (Momot[i] > (max(Mom)*penMom)) or (Fhtot[i] > (max(Fht)*penFht)) or (Fhdot[i] > (max(Fhd)*penFhd)) or (Pcot[i] > (Pc[i]*penFator)), cont)
-
-        while((Tcgot[i] > (max(Tcg)*penTcg)) or (Tclot[i] > (max(Tcl)*penTcl)) or (Eclot[i] > (max(Ecl)*penEcl)) or (Momot[i] > (max(Mom)*penMom)) or (Fhtot[i] > (max(Fht)*penFht)) or (Fhdot[i] > (max(Fhd)*penFhd)) or (Pcot[i] > (Pc[i]*penFator))):
-            Pcot[i] -= 10
-            result_ot = func(Pcot[i], teta[i])
-            Tcgot[i] = result_ot['Tcg']
-            Tclot[i] = result_ot['Tcl']
-            Eclot[i] = result_ot['Ecl']
-            Momot[i] = result_ot['Mom']
-            Fhdot[i] = result_ot['Fhd']
-            Fhtot[i] = result_ot['Fht']
-
+            while((Tcgot[i] > (max(Tcg)*penTcg)) or (Tclot[i] > (max(Tcl)*penTcl)) or (Eclot[i] > (max(Ecl)*penEcl)) or (Momot[i] > (max(Mom)*penMom)) or (Fhtot[i] > (max(Fht)*penFht)) or (Fhdot[i] > (max(Fhd)*penFhd)) or (Pcot[i] > (Pc[i]*penFator))):
+                Pcot[i] -= 10
+                result_ot = func(Pcot[i], teta[i])
+                Tcgot[i] = result_ot['Tcg']
+                Tclot[i] = result_ot['Tcl']
+                Eclot[i] = result_ot['Ecl']
+                Momot[i] = result_ot['Mom']
+                Fhdot[i] = result_ot['Fhd']
+                Fhtot[i] = result_ot['Fht']
 
     #CÁLCULOS DOS CRITÉRIOS DEFINIDOS NA API 2C
     Vd = 0
@@ -776,7 +773,6 @@ def mostra_modelo(
         '[Gráfico] Rp':Rp,
         '[Gráfico] Rpx':Rpx,         
         '[Gráfico] Rpy':Rpy,         
-        #'[Gráfico] gama_teta':degrees(gama) - teta,
         '[Gráfico] alfacl':degrees(alfacl),
         '[Gráfico] Cabo do sistema principal Orig. x Otim.':Tcgot,
         '[Gráfico] Cabo de lança Orig. x Otim.':Tclot,

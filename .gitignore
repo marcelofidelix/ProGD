@@ -1,1 +1,3 @@
 *.pyc
+resultado.csv
+/__pycache__
