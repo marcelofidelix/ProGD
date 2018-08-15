@@ -49,12 +49,7 @@ lista_param = ['[Gráfico] Ângulo alfa',
 '[Gráfico] alfacl',
 '[Gráfico] Rp',
 '[Gráfico] Rpx',
-'[Gráfico] Rpy',         
-'[Gráfico] gama_teta',
-'[Gráfico] Tcgx',         
-'[Gráfico] Tcgy',
-'[Gráfico] Tclx',
-'[Gráfico] Tcly',
+'[Gráfico] Rpy',
 '[Gráfico] gama',
 '[Gráfico] teta',
 '[Variável] a',
@@ -99,7 +94,6 @@ lista_param = ['[Gráfico] Ângulo alfa',
 '[Variável] D3',
 '[Variável] D4',
 '[Variável] Elan',
-'[Variável] L',
 '[Variável] Pmoi',
 '[Variável] Vc',
 '[Variável] CHA',
@@ -111,10 +105,15 @@ lista_param = ['[Gráfico] Ângulo alfa',
 '[Variável] FLFm',
 '[Variável] FLFl',
 '[Variável] tetac',
-'[Variável] slider_penTcg'
+'[Variável] slider_penTcg',
+'[Variável] slider_penTcl',
+'[Variável] slider_penEcl',
+'[Variável] slider_penMom',
+'[Variável] slider_penFht',
+'[Variável] slider_penFhd',
 ]
 
-sorted(lista_param)
+lista_param = sorted(lista_param)
 
 #lista de dicionários que vai receber os valores que populam o dropdown
 combo_param = []
