@@ -545,8 +545,10 @@ def mostra_modelo(
         K = 0
         if radio_mancal=='Rolamento':
             K = 1.04
+            #K = 1.02
         else:
             K = 1.09
+            #K = 1.045
         
         Efm = (K**Npm - 1) / (K**Nrm * Npm * (K - 1))
         Efl = (K**Npl - 1) / (K**Nrl * Npl * (K - 1))
@@ -580,7 +582,7 @@ def mostra_modelo(
         #Cálculo de esforço no cabo da lança
         Esl = (Pl * M * cos(teta_rad) + FLkgf * (L * cos(teta_rad)) + Pbola * (L + Ljib) * cos(teta_rad) + (CC1*D1 + CC2*D2 + CC3*D3) * cos(teta_rad) - Tcg * L * sin(alfa)) / ((L - N) * sin(beta))
         Esl = Esl / Efl
-        Tcl = Esl * FLFl
+        Tcl = Esl / Npl
 
         #Reações no pino do pé da lança
         Rpx = Esl * cos(beta) + Tcg * cos(alfa) + ((CC1+CC2+CC3) + Pl + FLkgf + Pbola) * sin(teta_rad)
