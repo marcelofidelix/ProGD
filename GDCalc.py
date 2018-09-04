@@ -699,7 +699,7 @@ def mostra_modelo(
             #print(i,(Tcgot[i] > (max(Tcg)*penTcg)) or (Tclot[i] > (max(Tcl)*penTcl)) or (Eclot[i] > (max(Ecl)*penEcl)) or (Momot[i] > (max(Mom)*penMom)) or (Fhtot[i] > (max(Fht)*penFht)) or (Fhdot[i] > (max(Fhd)*penFhd)) or (Pcot[i] > (Pc[i]*penFator)), cont)
 
             while((Tcgot[i] > (max(Tcg)*penTcg)) or (Tclot[i] > (max(Tcl)*penTcl)) or (Eclot[i] > (max(Ecl)*penEcl)) or (Momot[i] > (max(Mom)*penMom)) or (Fhtot[i] > (max(Fht)*penFht)) or (Fhdot[i] > (max(Fhd)*penFhd)) or (Pcot[i] > (Pc[i]*penFator))):
-                Pcot[i] -= 10
+                Pcot[i] -= 100
                 result_ot = func(Pcot[i], teta[i])
                 Tcgot[i] = result_ot['Tcg']
                 Tclot[i] = result_ot['Tcl']
@@ -829,6 +829,7 @@ def mostra_modelo(
                         ),
                     ],
                     'layout':go.Layout(
+                        plot_bgcolor='rgb(229,229,229)',
                         title=combo_param[10:]+' - '+combo_modelos,
                         xaxis={'title':label_x},
                         yaxis={'title':combo_param[10:]},
@@ -851,6 +852,7 @@ def mostra_modelo(
                             ),
                     ],
                     'layout':go.Layout(
+                            plot_bgcolor='rgb(229,229,229)',
                             title=combo_param[10:]+' - '+combo_modelos,
                             xaxis={'title':label_x},
                             yaxis={'title':combo_param[10:]},
