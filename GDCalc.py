@@ -23,6 +23,7 @@ lista_param = ['[Gráfico] Ângulo alfa',
 '[Gráfico] Ângulo beta',
 '[Gráfico] Capacidade Estática',
 '[Gráfico] Capacidade Estática Orig. x Otim.',
+'[Gráfico] Capacidade onboard x offboard (kgf)',
 '[Gráfico] Raio',
 '[Gráfico] Cabo do sistema principal',
 '[Gráfico] Cabo do sistema principal Orig. x Otim.',
@@ -53,6 +54,16 @@ lista_param = ['[Gráfico] Ângulo alfa',
 '[Gráfico] Lclan',
 '[Gráfico] kcabolan',
 '[Gráfico] kcabopend',
+'[Gráfico] Htip',
+'[Gráfico] ksustlan',
+'[Gráfico] kcabomoi',
+'[Gráfico] dsustlan',
+'[Gráfico] dlan',
+'[Gráfico] dmoi',
+'[Gráfico] tetad',
+'[Gráfico] dv (m)',
+'[Gráfico] kgd (lbf/ft)',
+'[Gráfico] cvoff (Adm.)',
 '[Variável] a',
 '[Variável] b',
 '[Variável] V',
@@ -798,8 +809,6 @@ def mostra_modelo(
     dsustlan = Tcl / ksustlan #m
     #Deslocamento da lança sob compressão
     dlan = - (Ecl / klan) #m
-    #if (lanRig == 1):
-    #    dlan = dlan * 0
     #Deslocamento total do cabo do moitão
     dmoi = (Pcot + Pmoi) / kcabomoi #m
     #Deslocamento angular da lança devido a todas as deformações combinadas
@@ -854,6 +863,17 @@ def mostra_modelo(
         '[Gráfico] Lcg':Lcg,
         '[Gráfico] Lclan':Lclan,
         '[Gráfico] kcabolan':kcabolan,
+        '[Gráfico] Htip':Htip,
+        '[Gráfico] ksustlan':ksustlan,
+        '[Gráfico] kcabomoi':kcabomoi,
+        '[Gráfico] dsustlan':dsustlan,
+        '[Gráfico] dlan':dlan,
+        '[Gráfico] dmoi':dmoi,
+        '[Gráfico] tetad':tetad,
+        '[Gráfico] dv (m)':dv,
+        '[Gráfico] kgd (lbf/ft)':kgd,
+        '[Gráfico] cvoff (Adm.)':cvoff,
+        '[Gráfico] Capacidade onboard x offboard (kgf)':Pcoff,
     }
     resultados = pd.DataFrame({
         'teta':teta,
@@ -904,6 +924,37 @@ def mostra_modelo(
                 }
             )
         
+        if combo_param[len(combo_param)-10:] == 'oard (kgf)':
+
+            return dcc.Graph(
+                id='grafico_tabela',
+                figure={
+                    'data':[
+                        go.Scatter(
+                            name='Original',
+                            x=eixo_x,
+                            y=eixo_y['[Gráfico] Capacidade onboard x offboard (kgf)'],
+                            text='Textoo',
+                            mode='markers+lines'
+                        ),
+                        go.Scatter(
+                            name='Otimizado',
+                            x=eixo_x,
+                            y=eixo_y['[Gráfico] Capacidade Estática Orig. x Otim.'],
+                            text='Textoo',
+                            mode='markers+lines'
+                        ),
+                    ],
+                    'layout':go.Layout(
+                        plot_bgcolor='rgb(229,229,229)',
+                        title=combo_param[10:]+' - '+combo_modelos,
+                        xaxis={'title':label_x},
+                        yaxis={'title':combo_param[10:]},
+                        hovermode='closest'
+                    )
+                }
+            )
+
         else:
             return dcc.Graph(
                 id='grafico_tabela',
