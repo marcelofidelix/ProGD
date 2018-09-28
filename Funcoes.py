@@ -1,47 +1,5 @@
 from numpy import radians, cos, sin, argmax, round_
-#import matplotlib.pylab as plt
-'''
-#Função que gera o gráfico de uma variável
-def gera_grafico(linhas,colunas,posicao,titulo,par1,par2):
-    plt.subplot(linhas,colunas,posicao)
-    plt.plot(par1,par2,lw=3)
-    plt.plot(par1,par2,"kx")
-    plt.title(titulo,fontsize=10)
-    plt.xlim(min(par1)-10,max(par1)*1.1)
-    plt.ylim(0,max(par2)*1.1)
-    plt.grid()
 
-#Função que gera o gráfico de duas variáveis
-def gera_grafico2(linhas,colunas,posicao,titulo,par1,par2,par3):
-    plt.subplot(linhas,colunas,posicao)
-    plt.plot(par1,par2,lw=3)
-    plt.plot(par1,par3,lw=3)
-    plt.plot(par1,par3,"kx")
-    plt.title(titulo,fontsize=10)
-    plt.xlim(min(par1)-10,max(par1)*1.1)
-    plt.ylim(0,max(par2)*1.1)
-    plt.text(min(par1),max(par2)*.05,'Máximo = '+str(round(max(par3),2)))
-    plt.grid()
-
-#Função que gera o gráfico por altura de onda
-def graf_Hsig(linhas,colunas,posicao,titulo,par1,par2,par3,par4,par5,par6,par7,par8,par9,par10):
-    plt.subplot(linhas,colunas,posicao)
-    plt.plot(par1,par2,lw=3,label='Onboard Orig.')
-    plt.plot(par1,par3,lw=3,label='Onboard Otm.')
-    plt.plot(par1,par3,'kx')
-    plt.plot(par1,par10,label='Off Hsig',lw=3)
-    plt.plot(par1,par4,label='API 2C 0,5m',lw=.5)
-    plt.plot(par1,par5,label='API 2C 1,0m',lw=.5)
-    plt.plot(par1,par6,label='API 2C 1,5m',lw=.5)
-    plt.plot(par1,par7,label='API 2C 2,0m',lw=.5)
-    plt.plot(par1,par8,label='API 2C 2,5m',lw=.5)
-    plt.plot(par1,par9,label='API 2C 3,0m',lw=.5)
-    plt.title(titulo)
-    plt.xlim(min(par1)-10,max(par1)*1.1)
-    plt.ylim(0,max(par2)*1.1)
-    plt.legend(loc=0,fontsize=7)#, borderaxespad=0.)
-    plt.grid()
- '''
  #Função que permite o cálculo do raio de ação
 def raio(teta, L, J, S):
 	teta_rad = radians(teta)

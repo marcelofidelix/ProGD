@@ -5,25 +5,19 @@ from dash.dependencies import Output, Input
 import plotly.graph_objs as go
 import pandas as pd
 import ast
-from numpy import radians, cos, array, arctan, arcsin, sin, pi, rad2deg, degrees, copy, clip
+from numpy import radians, cos, array, arctan, arcsin, sin, pi, rad2deg, degrees, copy, clip, arccos
 import numpy as np
 import Funcoes
-
 app = dash.Dash()
-
 #Lê o banco de dados e gera um DataFrame
 df_dados = pd.read_csv('df_dados.csv')
-
 #Ordena os dados por ordem alfabética
 df_dados.sort_values('Modelo',inplace=True)
-
 #Cria um array vazio
 combo_modelos_valores = []
-
 #Popula o array com dicionários que irão aparecer no dropdown dos modelos
 for i in df_dados['Modelo']:
     combo_modelos_valores.append({'label': i, 'value': i})
-
 #Lista de graficos que irão habitar o dropdown com os parâmetros para plotagem
 lista_param = ['[Gráfico] Ângulo alfa',
 '[Gráfico] Ângulo beta',
@@ -44,6 +38,8 @@ lista_param = ['[Gráfico] Ângulo alfa',
 '[Gráfico] Esforço nas hastes dianteiras do cav.',
 '[Gráfico] Momento Orig. x Otim.',
 '[Gráfico] Momento',
+'[Gráfico] Momento de inércia',
+'[Gráfico] Momento de inércia Orig. x Otim.',
 '[Gráfico] Sustentação da lança',
 '[Gráfico] Sustentação da lança Orig. x Otim.',
 '[Gráfico] alfacl',
@@ -52,6 +48,11 @@ lista_param = ['[Gráfico] Ângulo alfa',
 '[Gráfico] Rpy',
 '[Gráfico] gama',
 '[Gráfico] teta',
+'[Gráfico] Lcg',
+'[Gráfico] Lcl',
+'[Gráfico] Lclan',
+'[Gráfico] kcabolan',
+'[Gráfico] kcabopend',
 '[Variável] a',
 '[Variável] b',
 '[Variável] V',
@@ -79,7 +80,6 @@ lista_param = ['[Gráfico] Ângulo alfa',
 '[Variável] Npend',
 '[Variável] Dcabolan',
 '[Variável] Dcabomoi',
-'[Variável] Dcabopend',
 '[Variável] Pl',
 '[Variável] M',
 '[Variável] Lpend',
@@ -110,27 +110,32 @@ lista_param = ['[Gráfico] Ângulo alfa',
 '[Variável] slider_penEcl',
 '[Variável] slider_penMom',
 '[Variável] slider_penFht',
-'[Variável] slider_penFhd',
-]
-
+'[Variável] slider_penFhd',]
+#Ordena a lista
 lista_param = sorted(lista_param)
-
+#Função que gera tabela a partir de um DataFrame
+def generate_table(dataframe, max_rows=100):
+    return html.Table(
+        # Header
+        [html.Tr([html.Th(col) for col in dataframe.columns])] +
+        # Body
+        [html.Tr([
+            html.Td(dataframe.iloc[i][col]) for col in dataframe.columns
+        ]) for i in range(min(len(dataframe), max_rows))])
 #lista de dicionários que vai receber os valores que populam o dropdown
 combo_param = []
 for i in lista_param:
     combo_param.append({'label':i,'value':i})
-
 #Lista de graficos que irão habitar o dropdown raixo x ângulo
 combo_grafico = [
     {'label': 'Ângulo(°)', 'value': 'Ângulo(°)'},
     {'label': 'Raio(m)', 'value': 'Raio(m)'}
 ]
-
 #Definição do layout do app
 app.layout = html.Div([
-    
+    #html.Div(children=[html.H4(children='US Agriculture Exports (2011)'),generate_table(df_dados)]),
     html.Div([
-    html.H2('GDCalc'),
+    html.H3('GDCalc'),
 
     html.H4('Modelo'),
 
@@ -180,7 +185,7 @@ app.layout = html.Div([
         value=100,
     ),
 
-    html.Div('Comp. da Lança'),
+    html.Div('Comp. da lança'),
 
     dcc.Slider(
         id='slider_penEcl',
@@ -232,6 +237,22 @@ app.layout = html.Div([
 
     dcc.Slider(
         id='slider_penFhd',
+        min=0,
+        max=100,
+        step=1,
+            marks={
+        25: '25%',
+        50: '50%',
+        75 : '75%',
+        100: '100%'
+    },
+        value=100,
+    ),
+
+    html.Div('Momento de I. de giro'),
+
+    dcc.Slider(
+        id='slider_penI',
         min=0,
         max=100,
         step=1,
@@ -381,11 +402,8 @@ app.layout = html.Div([
         value='Ângulo(°)',
         labelStyle={'display': 'inline-block'}
     ),
-
     html.Div(id='mostra_modelo')
-
 ])
-
 @app.callback(
     Output('mostra_modelo', 'children'),
     [Input('combo_modelos', 'value'),
@@ -402,13 +420,13 @@ app.layout = html.Div([
     Input('slider_penMom', 'value'),
     Input('slider_penFht', 'value'),
     Input('slider_penFhd', 'value'),
+    Input('slider_penI', 'value'),
     Input('slider_penFator', 'value'),
     Input('In_Ecm', 'value'),
     Input('In_El', 'value'),
     Input('In_Ep', 'value'),
     Input('slider_H', 'value'),
     ])
-
 def mostra_modelo(
     combo_modelos,
     combo_ang_raio,
@@ -424,6 +442,7 @@ def mostra_modelo(
     slider_penMom,
     slider_penFht,
     slider_penFhd,
+    slider_penI,
     slider_penFator,
     In_Ecm,
     In_El,
@@ -431,7 +450,6 @@ def mostra_modelo(
     slider_H
     ):
     df = df_dados.set_index('Modelo')
-    
     #Associa os valores do banco de dados às variáveis
     teta = array(ast.literal_eval(df.loc[combo_modelos]['teta']))
     Pc = array(ast.literal_eval(df.loc[combo_modelos]['Pc']))
@@ -481,7 +499,6 @@ def mostra_modelo(
     L = df.loc[combo_modelos]['L']
     Pmoi = df.loc[combo_modelos]['Pmoi']
     tetac = radians(df.loc[combo_modelos]['tetac'])
-
     '''Cálculo do Cvon'''
     #Parâmetros que são calculados de acordo com o Hsig
     Hsig = slider_Hsig
@@ -506,13 +523,17 @@ def mostra_modelo(
         if (CHA < .03):
             CHA = .03
         List, Trim = 2.5, 2.5 #Conferir!!!
-    
+    ########################
+    #FUNÇÃO COM OS CÁLCULOS#
+    ########################
     def func(Pc, teta):
-
         teta_rad = radians(teta)
         
         #Cálculo do raio
         r = J + L * cos(teta_rad) + S * sin(teta_rad)
+
+        #Cálculo do raio do CG da lança
+        rcg = J + M * cos(teta_rad)
 
         #Tamanho dos vetores
         if type(Pc) is np.ndarray:
@@ -583,25 +604,22 @@ def mostra_modelo(
         Esl = (Pl * M * cos(teta_rad) + FLkgf * (L * cos(teta_rad)) + Pbola * (L + Ljib) * cos(teta_rad) + (CC1*D1 + CC2*D2 + CC3*D3) * cos(teta_rad) - Tcg * L * sin(alfa)) / ((L - N) * sin(beta))
         Esl = Esl / Efl
         Tcl = Esl / Npl
-
         #Reações no pino do pé da lança
         Rpx = Esl * cos(beta) + Tcg * cos(alfa) + ((CC1+CC2+CC3) + Pl + FLkgf + Pbola) * sin(teta_rad)
         Rpy = (CC1+CC2+CC3+ Pl + FLkgf + Pbola) * cos(teta_rad) - Esl * sin(beta) - Tcg * sin(alfa)
         Rp = (Rpx**2 + Rpy**2)**.5
         gama = arctan(abs(Rpy)/abs(Rpx))
-
-        """Esforço de compressão da lança"""
+        #Cálculo do esforço de compressão aplicado sobre a lança
         Ecl = Rp * cos(gama)
-
-        """Momento"""
+        #Cálculo do momento resultante sobre o pedestal
         Mom = (J + D1*cos(teta_rad))*CC1 + (J + D2 * cos(teta_rad))*CC2 + (J + D3 * cos(teta_rad)) * CC3 + Pl * (J + M * cos(teta_rad)) + FLkgf * r - Pplat * Dplat - Pcp * Dcp
-        
-        """Cavalete"""
+        #Cálculo dos esforços nas hastes do cavalete
         Fhd = Esl * cos(alfacl) / sin(tetac)
         Fht = Esl * sin(alfacl) + Fhd * cos(tetac) - Tcl
-
+        #Cálculo do momento de inércia de giro do guindaste
+        I = Pcp*Dcp**2 + Pplat*Dplat**2 + CC1*D1**2 + CC2*D2**2 + CC3*D3**2 + Pl*J**2 + (1/3)*Pl*rcg**2 + FLkgf*r**2 + Pbola*rjib**2
+        #Dicionário com os resultados de interesse
         result = {}
-
         result['teta_rad'] = teta_rad
         result['r'] = r
         result['rjib'] = rjib
@@ -632,6 +650,7 @@ def mostra_modelo(
         result['Mom'] = Mom
         result['Fhd'] = Fhd
         result['Fht'] = Fht
+        result['I'] = I
 
         return result
     
@@ -664,6 +683,7 @@ def mostra_modelo(
     Mom = func(Pc,teta)['Mom']
     Fhd = func(Pc,teta)['Fhd']
     Fht = func(Pc,teta)['Fht']
+    I = func(Pc,teta)['I']
 
     """Vetores ótimos"""
     Pcot = copy(Pc)
@@ -677,6 +697,7 @@ def mostra_modelo(
     Rpxot = copy(Rpx)
     Rpyot = copy(Rpy)
     Rpot = copy(Rp)
+    Iot = copy(I)
     gamaot = copy(gama)
     FLkgfot = copy(FLkgf)
     cvonot = copy(cvon)
@@ -687,19 +708,19 @@ def mostra_modelo(
     penMom = slider_penMom/100
     penFht = slider_penFht/100
     penFhd = slider_penFhd/100
+    penI = slider_penI/100
     penFator = slider_penFator/100
-
     """Evita que o programa entre sempre no loop de otimização, o que o deixa lento"""
-    if ((slider_penTcg == 100) and (slider_penTcl == 100) and (slider_penEcl == 100) and (slider_penMom == 100) and (slider_penFht == 100) and (slider_penFhd == 100) and (slider_penFator == 100)):
+    if ((slider_penTcg == 100) and (slider_penTcl == 100) and (slider_penEcl == 100) and (slider_penMom == 100) and 
+        (slider_penFht == 100) and (slider_penFhd == 100) and (slider_penFator == 100) and (slider_penI == 100)):
         pass
-    
     else:
         """Otimização da tabela"""
         for i in range(len(Pcot)):
-            #print(i,(Tcgot[i] > (max(Tcg)*penTcg)) or (Tclot[i] > (max(Tcl)*penTcl)) or (Eclot[i] > (max(Ecl)*penEcl)) or (Momot[i] > (max(Mom)*penMom)) or (Fhtot[i] > (max(Fht)*penFht)) or (Fhdot[i] > (max(Fhd)*penFhd)) or (Pcot[i] > (Pc[i]*penFator)), cont)
-
-            while((Tcgot[i] > (max(Tcg)*penTcg)) or (Tclot[i] > (max(Tcl)*penTcl)) or (Eclot[i] > (max(Ecl)*penEcl)) or (Momot[i] > (max(Mom)*penMom)) or (Fhtot[i] > (max(Fht)*penFht)) or (Fhdot[i] > (max(Fhd)*penFhd)) or (Pcot[i] > (Pc[i]*penFator))):
-                Pcot[i] -= 100
+            while((Tcgot[i] > (max(Tcg)*penTcg)) or (Tclot[i] > (max(Tcl)*penTcl)) or (Eclot[i] > (max(Ecl)*penEcl)) or 
+                (Momot[i] > (max(Mom)*penMom)) or (Fhtot[i] > (max(Fht)*penFht)) or (Fhdot[i] > (max(Fhd)*penFhd)) or 
+                (Pcot[i] > (Pc[i]*penFator)) or (Iot[i] > max(I)*penI)):
+                Pcot[i] -= 10
                 result_ot = func(Pcot[i], teta[i])
                 Tcgot[i] = result_ot['Tcg']
                 Tclot[i] = result_ot['Tcl']
@@ -707,21 +728,23 @@ def mostra_modelo(
                 Momot[i] = result_ot['Mom']
                 Fhdot[i] = result_ot['Fhd']
                 Fhtot[i] = result_ot['Fht']
-
-    #CÁLCULOS DOS CRITÉRIOS DEFINIDOS NA API 2C
+                Iot[i] = result_ot['I']
+    ############################################
+    #CÁLCULOS DOS CRITÉRIOS DEFINIDOS NA API 2C#
+    ############################################
     Vd = 0
     Vc = 0
     #Av = 0
     CHA = 0
     List = 0
     Trim = 0
-    
-    #Hsig e gravidade em unidades imperiais
+    #Hsig e gravidade em unidades imperiais#
     Hsig = Hsig *3.28083 #ft
     grav = 32.2 #ft/s²
     esc_UEP = radio_UEP
-
-    #APLICAÇÃO DAS FUNÇÕES
+    #######################
+    #APLICAÇÃO DAS FUNÇÕES#
+    #######################
     esc_embarc = radio_embarc
     Vd = Funcoes.calc_Vd(esc_embarc,Hsig)
     Vc = Funcoes.calc_Vc(esc_UEP,Hsig)
@@ -729,27 +752,30 @@ def mostra_modelo(
     List = Funcoes.calc_List(esc_UEP)
     Trim = Funcoes.calc_Trim(esc_UEP)
     Vhmin = Funcoes.calc_Vhmin(Hsig)
-
     Vh = slider_Vh
-
     Vr = Vh + (Vd**2+Vc**2)**.5
-
-    #CÁLCULOS DE RIGIDEZ
+    #####################
+    #CÁLCULOS DE RIGIDEZ#
+    #####################
     El = float(In_El)
     Em = float(In_Ecm)
     Ep = float(In_Ep)
+    #Distância vertical entre o pino do pé da lança e o mar
     Alt = slider_H
-
+    #Comprimento entre as selas fixa e flutuante medido ao longo dos cabos de lança
     Lclan = Lcl - Lpend #m
+    #Rigidez dos cabos de lança
     kcabolan = (1/9.81) * Npl * El*(1e6) * (.66*.25*(pi*Dcabolan**2)/Lclan) #kgf/m
+    #Rigidez dos pendentes
     kcabopend = (1/9.81) * Npend * Ep*(1e6) * (.66*.25*(pi*Dcabopend**2)/Lpend) #kgf/m
+    #Distância vertical entre a ponta da lança e a água
     Htip = Alt +L*sin(teta_rad) #m
+    #Área da seção do cabo do moitão
     Acb = (.77*.25*(pi*Dcabomoi**2))
-
+    #Rigidez do sistema de sustentação da lança
     ksustlan = (kcabopend*kcabolan)/(kcabopend+kcabolan) #kgf/m
-
+    #Cálculo da área de uma corda
     Alan = 0
-
     if (tipocorda == "C"):
         Alan = pi * (Dc**2 - (Dc-2*t)**2) / 4 #m²
         #print(Alan)
@@ -757,11 +783,48 @@ def mostra_modelo(
         Alan = Dc**2 - (Dc - t)**2 #m²
     elif (tipocorda == "L"):
         Alan = Dc * 2 * t - t**2 #m²
+    #Rigidez das 4 cordas
+    klan = (1/9.81) * ((200e9) * 4 * Alan) / (L) #kgf/m
+    #Cálculo da rigidez dos cabos do moitão no trecho entre a ponta de a lança e o moitão
+    kcabomoi_ae = (1/9.81) * (Npm) * (Em*1e6) * (Acb / Htip) #kgf/m
+    #Cálculo da rigidez dos cabos do moitão no trecho entre o guincho e a ponta da lança
+    kcabomoi_guin = (1/9.81) * (Em*1e6) * (Acb / Lcg) #kgf/m
+    #Cálculo da rigidez total dos cabos do moitão (associação em série)
+    kcabomoi = (kcabomoi_ae*kcabomoi_guin)/(kcabomoi_ae+kcabomoi_guin)
+    ###########################
+    #CÁLCULO DOS DESLOCAMENTOS#
+    ###########################
+    #Deslocamento total do sistema de sustentação da lança (Cabo de lança e pendentes)
+    dsustlan = Tcl / ksustlan #m
+    #Deslocamento da lança sob compressão
+    dlan = - (Ecl / klan) #m
+    #if (lanRig == 1):
+    #    dlan = dlan * 0
+    #Deslocamento total do cabo do moitão
+    dmoi = (Pcot + Pmoi) / kcabomoi #m
+    #Deslocamento angular da lança devido a todas as deformações combinadas
+    tetad = pi - tetal - arccos( - ((Lcl + dsustlan)**2 - (L-N+dlan)**2 - Dl**2) / (2*((L-N+dlan)*Dl)))
+    #Deslocamento vertical da ponta da lança
+    dv = L*sin(teta_rad) - (L + dlan)*sin(tetad) + dmoi #m
+    #Rigidez do guindaste
+    kgd = (Pcot + Pmoi) / dv #kgf/m
+    #Rigidez em lbf/ft
+    kgd = kgd*0.671968975 #lbf/ft
+    ########################
+    #CÁLCULO DO Cv OFFBOARD#
+    ########################
+    #Cálculo do Cv offboard conforme...
+    cvoff = 1 + Vr * ((kgd)/(grav*((Pcot+Pmoi)*2.204623)))**.5 #adm
+    #Relação entre os coeficientes dinâmicos on e offboard
+    rel = cvonot/cvoff #amd
+    #Cálculo da tabela de carga offboard
+    Pcoff = Pcot * rel #kgf
 
     eixo_y = {
         '[Gráfico] Ângulo alfa':rad2deg(alfa),
         '[Gráfico] Ângulo beta':rad2deg(beta),
         '[Gráfico] Capacidade Estática':Pc,
+        '[Gráfico] Capacidade Estática Orig. x Otim.':Pcot,
         '[Gráfico] Cabo do sistema principal':Tcg,
         '[Gráfico] Cabo de lança':Tcl,
         '[Gráfico] Raio':r,
@@ -785,15 +848,18 @@ def mostra_modelo(
         '[Gráfico] Esforço de compressão na lança Orig. x Otim.':Eclot,
         '[Gráfico] gama':degrees(gama),
         '[Gráfico] teta':teta,
-        '[Gráfico] Capacidade Estática Orig. x Otim.':Pcot,
+        '[Gráfico] Momento de inércia':I,
+        '[Gráfico] Momento de inércia Orig. x Otim.':Iot,
+        '[Gráfico] Lcl':Lcl,
+        '[Gráfico] Lcg':Lcg,
+        '[Gráfico] Lclan':Lclan,
+        '[Gráfico] kcabolan':kcabolan,
     }
-
     resultados = pd.DataFrame({
         'teta':teta,
         'Pc':Pc,
         'Pcot':Pcot
         })
-    
     resultados.to_csv('resultado.csv',sep=',')
 
     eixo_x = teta
