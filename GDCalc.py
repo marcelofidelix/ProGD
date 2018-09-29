@@ -826,6 +826,9 @@ def mostra_modelo(
     cvoff = 1 + Vr * ((kgd)/(grav*((Pcot+Pmoi)*2.204623)))**.5 #adm
     #Relação entre os coeficientes dinâmicos on e offboard
     rel = cvonot/cvoff #amd
+    for i in range(len(Pcot)):
+        if (rel[i] > 1):
+            rel[i] = 1 
     #Cálculo da tabela de carga offboard
     Pcoff = Pcot * rel #kgf
 
@@ -878,7 +881,9 @@ def mostra_modelo(
     resultados = pd.DataFrame({
         'teta':teta,
         'Pc':Pc,
-        'Pcot':Pcot
+        'Pcot':Pcot,
+        'Pcoff':Pcoff,
+        'alfa':rad2deg(alfa),
         })
     resultados.to_csv('resultado.csv',sep=',')
 
@@ -931,16 +936,16 @@ def mostra_modelo(
                 figure={
                     'data':[
                         go.Scatter(
-                            name='Original',
+                            name='Onboard',
                             x=eixo_x,
-                            y=eixo_y['[Gráfico] Capacidade onboard x offboard (kgf)'],
+                            y=eixo_y['[Gráfico] Capacidade Estática Orig. x Otim.'],
                             text='Textoo',
                             mode='markers+lines'
                         ),
                         go.Scatter(
-                            name='Otimizado',
+                            name='Offboard',
                             x=eixo_x,
-                            y=eixo_y['[Gráfico] Capacidade Estática Orig. x Otim.'],
+                            y=eixo_y['[Gráfico] Capacidade onboard x offboard (kgf)'],
                             text='Textoo',
                             mode='markers+lines'
                         ),
