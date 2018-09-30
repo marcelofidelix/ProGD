@@ -137,10 +137,11 @@ def generate_table(dataframe, max_rows=100):
 combo_param = []
 for i in lista_param:
     combo_param.append({'label':i,'value':i})
-#Lista de graficos que irão habitar o dropdown raixo x ângulo
+#Lista de opções que irão habitar o radio com opções para o eixo x
 combo_grafico = [
     {'label': 'Ângulo(°)', 'value': 'Ângulo(°)'},
-    {'label': 'Raio(m)', 'value': 'Raio(m)'}
+    {'label': 'Raio(m)', 'value': 'Raio(m)'},
+    {'label': 'Carga(kgf)', 'value':'Carga(kgf)'}
 ]
 #Definição do layout do app
 app.layout = html.Div([
@@ -893,6 +894,9 @@ def mostra_modelo(
     if (combo_ang_raio == 'Raio(m)'):
         eixo_x = r
         label_x = 'Raio (m)'
+    if (combo_ang_raio == 'Carga(kgf)'):
+        eixo_x = Pcot
+        label_x = 'Carga do gancho (kgf)'
     
     df.loc[combo_modelos]['[Gráfico] Raio'] = ast.literal_eval(df.loc[combo_modelos]['teta'])
 
