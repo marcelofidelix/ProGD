@@ -671,37 +671,39 @@ def mostra_modelo(
 
         return result
     
-    teta_rad = func(Pc, teta)['teta_rad']
-    r = func(Pc,teta)['r']
-    rjib = func(Pc,teta)['rjib']
-    Dg = func(Pc,teta)['Dg']
-    tetag = func(Pc,teta)['tetag']
-    Lcg = func(Pc,teta)['Lcg']
-    alfa = func(Pc,teta)['alfa']
-    Dl = func(Pc,teta)['Dl']
-    tetal = func(Pc,teta)['tetal']
-    Lcl = func(Pc,teta)['Lcl']
-    beta = func(Pc,teta)['beta']
-    K = func(Pc,teta)['K']
-    Efm = func(Pc,teta)['Efm']
-    Efl = func(Pc,teta)['Efl']
-    FLFm = func(Pc,teta)['FLFm']
-    FLFl = func(Pc,teta)['FLFl']
-    alfacl = func(Pc,teta)['alfacl']
-    cvon = func(Pc,teta)['cvon']
-    FLkgf = func(Pc,teta)['FLkgf']
-    Tcg = func(Pc,teta)['Tcg']
-    Esl = func(Pc,teta)['Esl']
-    Tcl = func(Pc,teta)['Tcl']
-    Rpx = func(Pc,teta)['Rpx']
-    Rpy = func(Pc,teta)['Rpy']
-    Rp = func(Pc,teta)['Rp']
-    gama = func(Pc,teta)['gama']
-    Ecl = func(Pc,teta)['Ecl']
-    Mom = func(Pc,teta)['Mom']
-    Fhd = func(Pc,teta)['Fhd']
-    Fht = func(Pc,teta)['Fht']
-    I = func(Pc,teta)['I']
+    result = func(Pc, teta)
+    
+    teta_rad = result['teta_rad']
+    r = result['r']
+    rjib = result['rjib']
+    Dg = result['Dg']
+    tetag = result['tetag']
+    Lcg = result['Lcg']
+    alfa = result['alfa']
+    Dl = result['Dl']
+    tetal = result['tetal']
+    Lcl = result['Lcl']
+    beta = result['beta']
+    K = result['K']
+    Efm = result['Efm']
+    Efl = result['Efl']
+    FLFm = result['FLFm']
+    FLFl = result['FLFl']
+    alfacl = result['alfacl']
+    cvon = result['cvon']
+    FLkgf = result['FLkgf']
+    Tcg = result['Tcg']
+    Esl = result['Esl']
+    Tcl = result['Tcl']
+    Rpx = result['Rpx']
+    Rpy = result['Rpy']
+    Rp = result['Rp']
+    gama = result['gama']
+    Ecl = result['Ecl']
+    Mom = result['Mom']
+    Fhd = result['Fhd']
+    Fht = result['Fht']
+    I = result['I']
 
     """Vetores ótimos"""
     Pcot = copy(Pc)
@@ -789,7 +791,7 @@ def mostra_modelo(
     #Rigidez dos pendentes
     kcabopend = (1/9.81) * Npend * Ep * (.68*.25*(pi*Dcabopend**2)/Lpend) #kgf/m
     #Distância vertical entre a ponta da lança e a água
-    Htip = Alt + L*sin(teta_rad) #m
+    Htip = Alt + L*sin(teta_rad) - S*sin(teta_rad)#m
     #Área da seção do cabo do moitão
     #Considera o fator de enchimento de 0.77 do cabo Bridon Dyform 34LR 34x7
     Acb = (.77*.25*(pi*Dcabomoi**2))
