@@ -1,8 +1,8 @@
-# GDCalc
+# ProGD
 
 ## What is it?
 
-GDCalc is a program used to calculate forces that act on the structural members and wire ropes of offshore cranes. It also can be used to generate reduced load charts according to user defined criteria and to calculate dynamic load charts applying the API 2C criteria.
+ProGD is a program used to calculate forces that act on the structural members and wire ropes of offshore cranes. It also can be used to generate reduced load charts according to user defined parameters and to calculate dynamic load charts applying the API 2C criteria.
 
 The UI is built on the Dash framework.
 

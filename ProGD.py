@@ -5,7 +5,7 @@ from dash.dependencies import Output, Input
 import plotly.graph_objs as go
 import pandas as pd
 import ast
-from numpy import radians, cos, array, arctan, arcsin, sin, pi, rad2deg, degrees, copy, clip, arccos
+from numpy import radians, cos, array, arctan, arcsin, sin, pi, rad2deg, degrees, copy, clip, arccos, round
 import numpy as np
 import Funcoes
 app = dash.Dash()
@@ -23,7 +23,7 @@ lista_param = ['[Gráfico] Ângulo alfa',
 '[Gráfico] Ângulo beta',
 '[Gráfico] Capacidade Estática',
 '[Gráfico] Capacidade Estática Orig. x Otim.',
-'[Gráfico] Capacidade onboard x offboard (kgf)',
+'[Gráfico] Capacidade onboard x offboard',
 '[Gráfico] Raio',
 '[Gráfico] Cabo do sistema principal',
 '[Gráfico] Cabo do sistema principal Orig. x Otim.',
@@ -61,9 +61,15 @@ lista_param = ['[Gráfico] Ângulo alfa',
 '[Gráfico] dlan',
 '[Gráfico] dmoi',
 '[Gráfico] tetad',
-'[Gráfico] dv (m)',
-'[Gráfico] kgd (lbf/ft)',
-'[Gráfico] cvoff (Adm.)',
+'[Gráfico] dv_sl',
+'[Gráfico] dv_lan',
+'[Gráfico] dv_moi',
+'[Gráfico] dv',
+'[Gráfico] kgd',
+'[Gráfico] cvoff',
+'[Gráfico] eps',
+'[Gráfico] Deps',
+'[Gráfico] Factored Load',
 '[Variável] a',
 '[Variável] b',
 '[Variável] V',
@@ -165,14 +171,14 @@ app.layout = html.Div([
     
     [html.H4('Penalizações'),
 
-    html.Div('Cabo do guincho'),
+    html.Div('Cabo Moitão'),
 
     dcc.Slider(
         id='slider_penTcg',
         min=0,
         max=100,
         step=1,
-            marks={
+        marks={
         25: '25%',
         50: '50%',
         75 : '75%',
@@ -181,14 +187,14 @@ app.layout = html.Div([
         value=100,
     ),
 
-    html.Div('Cabo da lança'),
+    html.Div('Cabo Lança'),
 
     dcc.Slider(
         id='slider_penTcl',
         min=0,
         max=100,
         step=1,
-            marks={
+        marks={
         25: '25%',
         50: '50%',
         75 : '75%',
@@ -197,14 +203,14 @@ app.layout = html.Div([
         value=100,
     ),
 
-    html.Div('Comp. da lança'),
+    html.Div('Comp. Lança'),
 
     dcc.Slider(
         id='slider_penEcl',
         min=0,
         max=100,
         step=1,
-            marks={
+        marks={
         25: '25%',
         50: '50%',
         75 : '75%',
@@ -220,7 +226,7 @@ app.layout = html.Div([
         min=0,
         max=100,
         step=1,
-            marks={
+        marks={
         25: '25%',
         50: '50%',
         75 : '75%',
@@ -229,14 +235,14 @@ app.layout = html.Div([
         value=100,
     ),
 
-    html.Div('Hastes tras. do cav.'),
+    html.Div('H. tras. cav.'),
 
     dcc.Slider(
         id='slider_penFht',
         min=0,
         max=100,
         step=1,
-            marks={
+        marks={
         25: '25%',
         50: '50%',
         75 : '75%',
@@ -245,14 +251,14 @@ app.layout = html.Div([
         value=100,
     ),
 
-    html.Div('Hastes dian. do cav.'),
+    html.Div('H. dian. cav.'),
 
     dcc.Slider(
         id='slider_penFhd',
         min=0,
         max=100,
         step=1,
-            marks={
+        marks={
         25: '25%',
         50: '50%',
         75 : '75%',
@@ -261,14 +267,14 @@ app.layout = html.Div([
         value=100,
     ),
 
-    html.Div('Momento de I. de giro'),
+    html.Div('M. de I. de giro'),
 
     dcc.Slider(
         id='slider_penI',
         min=0,
         max=100,
         step=1,
-            marks={
+        marks={
         25: '25%',
         50: '50%',
         75 : '75%',
@@ -277,7 +283,7 @@ app.layout = html.Div([
         value=100,
     ),
 
-    html.Div('Fator de penalização'),
+    html.Div('F. de pen.'),
 
     dcc.Slider(
         id='slider_penFator',
@@ -370,7 +376,7 @@ app.layout = html.Div([
             {'label': 'SS', 'value': 'SS'},
             {'label': 'FPSO', 'value': 'FPSO'},
         ],
-        value='Fixa',
+        value='SS',
         labelStyle={'display': 'inline-block'}
     ),
 
@@ -585,12 +591,13 @@ def mostra_modelo(
         
         Efm = (K**Npm - 1) / (K**Nrm * Npm * (K - 1))
         Efl = (K**Npl - 1) / (K**Nrl * Npl * (K - 1))
-
         FLFm = 1 / (Npm * Efm)
         FLFl = 1 / (Npl * Efl)
 
-        alfacl = teta_rad + tetal + tetac - beta - pi/2
+        #Apesar do tetac ser um dado de entrada, vamos redefinir o seu valor!
+        tetac = arctan(a/b)
 
+        alfacl = teta_rad + tetal + tetac - beta - pi/2
 
         cvon = 1.373 - ((Pc+Pmoi)*2.204623)/(1173913) + Av
         #Limita o valor do Cvon
@@ -608,10 +615,8 @@ def mostra_modelo(
 
         #Factored Load
         FLkgf = (Pc + Pmoi) * cvon
-
         #Cálculo do esforço no cabo do moitão
         Tcg = FLkgf * FLFm
-
         #Cálculo de esforço no cabo da lança
         Esl = (Pl * M * cos(teta_rad) + FLkgf * (L * cos(teta_rad)) + Pbola * (L + Ljib) * cos(teta_rad) + (CC1*D1 + CC2*D2 + CC3*D3) * cos(teta_rad) - Tcg * L * sin(alfa)) / ((L - N) * sin(beta))
         Esl = Esl / Efl
@@ -681,6 +686,7 @@ def mostra_modelo(
     Efm = func(Pc,teta)['Efm']
     Efl = func(Pc,teta)['Efl']
     FLFm = func(Pc,teta)['FLFm']
+    FLFl = func(Pc,teta)['FLFl']
     alfacl = func(Pc,teta)['alfacl']
     cvon = func(Pc,teta)['cvon']
     FLkgf = func(Pc,teta)['FLkgf']
@@ -769,20 +775,23 @@ def mostra_modelo(
     #####################
     #CÁLCULOS DE RIGIDEZ#
     #####################
-    El = float(In_El)
-    Em = float(In_Ecm)
-    Ep = float(In_Ep)
+    #Módulos de elasticidade dos cabos, conforme entrada na GUI
+    El = float(In_El) * 10**6 #Pa
+    Em = float(In_Ecm) * 10**6 #Pa
+    Ep = float(In_Ep) * 10**6 #Pa
     #Distância vertical entre o pino do pé da lança e o mar
     Alt = slider_H
     #Comprimento entre as selas fixa e flutuante medido ao longo dos cabos de lança
     Lclan = Lcl - Lpend #m
     #Rigidez dos cabos de lança
-    kcabolan = (1/9.81) * Npl * El*(1e6) * (.66*.25*(pi*Dcabolan**2)/Lclan) #kgf/m
+    #Considera o fator de enchimento de 0,68 do cabo Briden Dyform 8 8x26
+    kcabolan = (1/9.81) * Npl * El * (.68*.25*(pi*Dcabolan**2)/Lclan) #kgf/m
     #Rigidez dos pendentes
-    kcabopend = (1/9.81) * Npend * Ep*(1e6) * (.66*.25*(pi*Dcabopend**2)/Lpend) #kgf/m
+    kcabopend = (1/9.81) * Npend * Ep * (.68*.25*(pi*Dcabopend**2)/Lpend) #kgf/m
     #Distância vertical entre a ponta da lança e a água
-    Htip = Alt +L*sin(teta_rad) #m
+    Htip = Alt + L*sin(teta_rad) #m
     #Área da seção do cabo do moitão
+    #Considera o fator de enchimento de 0.77 do cabo Bridon Dyform 34LR 34x7
     Acb = (.77*.25*(pi*Dcabomoi**2))
     #Rigidez do sistema de sustentação da lança
     ksustlan = (kcabopend*kcabolan)/(kcabopend+kcabolan) #kgf/m
@@ -790,7 +799,6 @@ def mostra_modelo(
     Alan = 0
     if (tipocorda == "C"):
         Alan = pi * (Dc**2 - (Dc-2*t)**2) / 4 #m²
-        #print(Alan)
     elif (tipocorda == "Q"):
         Alan = Dc**2 - (Dc - t)**2 #m²
     elif (tipocorda == "L"):
@@ -798,38 +806,47 @@ def mostra_modelo(
     #Rigidez das 4 cordas
     klan = (1/9.81) * ((200e9) * 4 * Alan) / (L) #kgf/m
     #Cálculo da rigidez dos cabos do moitão no trecho entre a ponta de a lança e o moitão
-    kcabomoi_ae = (1/9.81) * (Npm) * (Em*1e6) * (Acb / Htip) #kgf/m
+    kcabomoi_ae = (1/9.81) * Npm * Em * (Acb / Htip) #kgf/m
     #Cálculo da rigidez dos cabos do moitão no trecho entre o guincho e a ponta da lança
-    kcabomoi_guin = (1/9.81) * (Em*1e6) * (Acb / Lcg) #kgf/m
+    kcabomoi_guin = (1/9.81) * Em * (Acb / Lcg) #kgf/m
     #Cálculo da rigidez total dos cabos do moitão (associação em série)
     kcabomoi = (kcabomoi_ae*kcabomoi_guin)/(kcabomoi_ae+kcabomoi_guin)
     ###########################
     #CÁLCULO DOS DESLOCAMENTOS#
     ###########################
     #Deslocamento total do sistema de sustentação da lança (Cabo de lança e pendentes)
-    dsustlan = Tcl / ksustlan #m
+    dsustlan = Tclot / ksustlan #m
     #Deslocamento da lança sob compressão
-    dlan = - (Ecl / klan) #m
+    dlan = Eclot / klan #m
     #Deslocamento total do cabo do moitão
     dmoi = (Pcot + Pmoi) / kcabomoi #m
     #Deslocamento angular da lança devido a todas as deformações combinadas
-    tetad = pi - tetal - arccos( - ((Lcl + dsustlan)**2 - (L-N+dlan)**2 - Dl**2) / (2*((L-N+dlan)*Dl)))
+    #tetad = pi - tetal - arccos((Dl**2 + (L-N)**2 - (Lcl * dsustlan)**2) / (2*Dl*(L-N))) #rad
+    eps = pi - tetal - teta_rad
+    #Variação do ângulo da lança devido à extensão do sistema de sust. da lança
+    Deps = arccos(((Lcl+dsustlan)**2 - Dl**2 - (L - N)**2) / (-2*Dl*(L - N))) - eps
+    #Ângulo da lança após a extensão do sistema de sustentação da lança
+    tetad = teta_rad - Deps
     #Deslocamento vertical da ponta da lança
-    dv = L*sin(teta_rad) - (L + dlan)*sin(tetad) + dmoi #m
+    #dv_sl = L*(sin(teta_rad) - sin(teta_rad - Deps))
+    dv_sl = L * (teta_rad - tetad) * cos(teta_rad) #Devido à extensão do sistema de lança
+    dv_lan = dlan * sin(teta_rad) #Devido à compressão da lança
+    dv_moi = dmoi #Devido à extensão dos cabos do moitão
+    dv = dv_sl + dv_lan + dv_moi
     #Rigidez do guindaste
     kgd = (Pcot + Pmoi) / dv #kgf/m
     #Rigidez em lbf/ft
-    kgd = kgd*0.671968975 #lbf/ft
+    kgd = kgd * 0.671968975 #lbf/ft
     ########################
     #CÁLCULO DO Cv OFFBOARD#
     ########################
-    #Cálculo do Cv offboard conforme...
+    #Cálculo do Cv offboard
     cvoff = 1 + Vr * ((kgd)/(grav*((Pcot+Pmoi)*2.204623)))**.5 #adm
     #Relação entre os coeficientes dinâmicos on e offboard
     rel = cvonot/cvoff #amd
     for i in range(len(Pcot)):
         if (rel[i] > 1):
-            rel[i] = 1 
+            rel[i] = 1
     #Cálculo da tabela de carga offboard
     Pcoff = Pcot * rel #kgf
 
@@ -861,6 +878,7 @@ def mostra_modelo(
         '[Gráfico] Esforço de compressão na lança Orig. x Otim.':Eclot,
         '[Gráfico] gama':degrees(gama),
         '[Gráfico] teta':teta,
+        '[Gráfico] tetad':tetad,
         '[Gráfico] Momento de inércia':I,
         '[Gráfico] Momento de inércia Orig. x Otim.':Iot,
         '[Gráfico] Lcl':Lcl,
@@ -873,20 +891,26 @@ def mostra_modelo(
         '[Gráfico] dsustlan':dsustlan,
         '[Gráfico] dlan':dlan,
         '[Gráfico] dmoi':dmoi,
-        '[Gráfico] tetad':tetad,
-        '[Gráfico] dv (m)':dv,
-        '[Gráfico] kgd (lbf/ft)':kgd,
-        '[Gráfico] cvoff (Adm.)':cvoff,
-        '[Gráfico] Capacidade onboard x offboard (kgf)':Pcoff,
+        '[Gráfico] dv_sl':dv_sl,
+        '[Gráfico] dv_lan':dv_lan,
+        '[Gráfico] dv_moi':dv_moi,
+        '[Gráfico] dv':dv,
+        '[Gráfico] kgd':kgd,
+        '[Gráfico] eps':degrees(eps),
+        '[Gráfico] Deps':degrees(Deps),
+        '[Gráfico] cvoff':cvoff,
+        '[Gráfico] Capacidade onboard x offboard':Pcoff,
+        '[Gráfico] Factored Load':Pcot*cvon,
     }
     resultados = pd.DataFrame({
         'teta':teta,
-        'Pc':Pc,
-        'Pcot':Pcot,
-        'Pcoff':Pcoff,
-        'alfa':rad2deg(alfa),
+        'raio':r,
+        'Pc':round(Pc),
+        'Pcot':round(Pcot),
+        'Pcoff':round(Pcoff)
         })
-    resultados.to_csv('resultado.csv',sep=',')
+
+    resultados.to_csv('resultado.csv', sep=',')
 
     eixo_x = teta
     label_x = 'Ângulo da Lança (°)'
@@ -896,7 +920,7 @@ def mostra_modelo(
         label_x = 'Raio (m)'
     if (combo_ang_raio == 'Carga(kgf)'):
         eixo_x = Pcot
-        label_x = 'Carga do gancho (kgf)'
+        label_x = 'Carga no gancho (kgf)'
     
     df.loc[combo_modelos]['[Gráfico] Raio'] = ast.literal_eval(df.loc[combo_modelos]['teta'])
 
@@ -933,7 +957,7 @@ def mostra_modelo(
                 }
             )
         
-        if combo_param[len(combo_param)-10:] == 'oard (kgf)':
+        if combo_param[len(combo_param)-4:] == 'oard':
 
             return dcc.Graph(
                 id='grafico_tabela',
@@ -949,7 +973,7 @@ def mostra_modelo(
                         go.Scatter(
                             name='Offboard',
                             x=eixo_x,
-                            y=eixo_y['[Gráfico] Capacidade onboard x offboard (kgf)'],
+                            y=eixo_y['[Gráfico] Capacidade onboard x offboard'],
                             text='Textoo',
                             mode='markers+lines'
                         ),
