@@ -155,7 +155,7 @@ app.layout = html.Div([
     html.Div([
     html.H3('GDCalc'),
 
-    html.H4('Modelo'),
+    html.H4('Equipamento'),
 
     dcc.Dropdown(
     id='combo_modelos',
