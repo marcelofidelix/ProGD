@@ -127,7 +127,8 @@ lista_param = ['[Gráfico] Ângulo alfa',
 '[Variável] slider_penEcl',
 '[Variável] slider_penMom',
 '[Variável] slider_penFht',
-'[Variável] slider_penFhd',]
+'[Variável] slider_penFhd',
+'[Variável] slider_penI',]
 #Ordena a lista
 lista_param = sorted(lista_param)
 #Função que gera tabela a partir de um DataFrame
