@@ -1,3 +1,4 @@
 *.pyc
 resultado.csv
 /__pycache__
+/venv
