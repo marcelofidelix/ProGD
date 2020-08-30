@@ -621,8 +621,8 @@ def mostra_modelo(
         Tcg = FLkgf * FLFm
         #Cálculo de esforço no cabo da lança
         Esl = (Pl * M * cos(teta_rad) + FLkgf * (L * cos(teta_rad)) + Pbola * (L + Ljib) * cos(teta_rad) + (CC1*D1 + CC2*D2 + CC3*D3) * cos(teta_rad) - Tcg * L * sin(alfa)) / ((L - N) * sin(beta))
-        Esl = Esl / Efl
-        Tcl = Esl / Npl
+        #Esl = Esl / Efl
+        Tcl = Esl / (Npl * Efl)
         #Reações no pino do pé da lança
         Rpx = Esl * cos(beta) + Tcg * cos(alfa) + ((CC1+CC2+CC3) + Pl + FLkgf + Pbola) * sin(teta_rad)
         Rpy = (CC1+CC2+CC3+ Pl + FLkgf + Pbola) * cos(teta_rad) - Esl * sin(beta) - Tcg * sin(alfa)
