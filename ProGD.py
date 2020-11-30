@@ -565,7 +565,7 @@ def mostra_modelo(
         #Parâmetros geométricos
         Dg = (H**2 + (V + G/2)**2)**.5
         tetag = arctan((V + G/2) / H)
-        Lcg = (Dg**2 + L**2 - 2 * L * cos(pi - teta_rad - tetag))**.5
+        Lcg = (Dg**2 + L**2 - 2 * L * Dg * cos(pi - teta_rad - tetag))**.5
         alfa = arcsin((Dg * sin(pi - teta_rad - tetag)) / Lcg)
 
         #Para guindastes com guincho de lança na lança
@@ -627,11 +627,11 @@ def mostra_modelo(
         Rpx = Esl * cos(beta) + Tcg * cos(alfa) + ((CC1+CC2+CC3) + Pl + FLkgf + Pbola) * sin(teta_rad)
         Rpy = (CC1+CC2+CC3+ Pl + FLkgf + Pbola) * cos(teta_rad) - Esl * sin(beta) - Tcg * sin(alfa)
         Rp = (Rpx**2 + Rpy**2)**.5
-        gama = arctan(abs(Rpy)/abs(Rpx))
+        gama = abs(arctan(abs(Rpy)/abs(Rpx)) - teta_rad)
         #Cálculo do esforço de compressão aplicado sobre a lança
         Ecl = Rp * cos(gama)
         #Cálculo do momento resultante sobre o pedestal
-        Mom = (J + D1*cos(teta_rad))*CC1 + (J + D2 * cos(teta_rad))*CC2 + (J + D3 * cos(teta_rad)) * CC3 + Pl * (J + M * cos(teta_rad)) + FLkgf * r - Pplat * Dplat - Pcp * Dcp
+        Mom = (J + D1*cos(teta_rad))*CC1 + (J + D2 * cos(teta_rad))*CC2 + (J + D3 * cos(teta_rad)) * CC3 + Pl * (J + M * cos(teta_rad)) + FLkgf * r + Pbola * rjib - Pplat * Dplat - Pcp * Dcp
         #Cálculo dos esforços nas hastes do cavalete
         Fhd = Esl * cos(alfacl) / sin(tetac)
         Fht = Esl * sin(alfacl) + Fhd * cos(tetac) - Tcl
