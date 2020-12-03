@@ -636,7 +636,7 @@ def mostra_modelo(
         Fhd = Esl * cos(alfacl) / sin(tetac)
         Fht = Esl * sin(alfacl) + Fhd * cos(tetac) - Tcl
         #Cálculo do momento de inércia de giro do guindaste
-        I = Pcp*Dcp**2 + Pplat*Dplat**2 + CC1*D1**2 + CC2*D2**2 + CC3*D3**2 + Pl*J**2 + (1/3)*Pl*rcg**2 + FLkgf*r**2 + Pbola*rjib**2
+        I = Pcp*Dcp**2 + Pplat*Dplat**2 + CC1*(J+D1*cos(teta_rad))**2 + CC2*(J+D2*cos(teta_rad))**2 + CC3*(J+D3*cos(teta_rad))**2 + Pl*(J+rcg)**2 + FLkgf*r**2 + Pbola*rjib**2
         #Dicionário com os resultados de interesse
         result = {}
         result['teta_rad'] = teta_rad
