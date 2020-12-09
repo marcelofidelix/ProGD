@@ -71,6 +71,7 @@ lista_param = ['[Gráfico] Ângulo alfa',
 '[Gráfico] eps',
 '[Gráfico] Deps',
 '[Gráfico] Factored Load',
+'[Gráfico] Design Factors (Running Rigging)',
 '[Variável] a',
 '[Variável] b',
 '[Variável] V',
@@ -854,6 +855,15 @@ def mostra_modelo(
     #Cálculo da tabela de carga offboard
     Pcoff = Pcot * rel #kgf
 
+    #Coeficiente de Segurança dos Cabos
+    CS_cabos = 10000 / (0.004 * (Pc * 2.20462262) + 1910)
+    
+    for i in range(len(Pcot)):
+        if CS_cabos[i] < 3:
+            CS_cabos[i] = 3
+        if CS_cabos[i] > 5:
+            CS_cabos[i] = 5
+
     eixo_y = {
         '[Gráfico] Ângulo alfa':rad2deg(alfa),
         '[Gráfico] Ângulo beta':rad2deg(beta),
@@ -905,6 +915,7 @@ def mostra_modelo(
         '[Gráfico] cvoff':cvoff,
         '[Gráfico] Capacidade onboard x offboard':Pcoff,
         '[Gráfico] Factored Load':Pcot*cvon,
+        '[Gráfico] Design Factors (Running Rigging)': CS_cabos
     }
     resultados = pd.DataFrame({
         'teta':teta,
