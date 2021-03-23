@@ -9,6 +9,7 @@ import ast
 from numpy import radians, cos, array, arctan, arcsin, sin, pi, rad2deg, degrees, copy, clip, arccos, round
 import numpy as np
 import Funcoes
+import pdb
 app = dash.Dash()
 #Lê o banco de dados e gera um DataFrame
 df_dados = pd.read_csv('df_dados.csv')
@@ -627,6 +628,10 @@ def mostra_modelo(
         #Reações no pino do pé da lança
         Rpx = Esl * cos(beta) + Tcg * cos(alfa) + ((CC1+CC2+CC3) + Pl + FLkgf + Pbola) * sin(teta_rad)
         Rpy = (CC1+CC2+CC3+ Pl + FLkgf + Pbola) * cos(teta_rad) - Esl * sin(beta) - Tcg * sin(alfa)
+        #Gambiarra para considerar o Clarke Chapman, que possui roldanas para o moitão no cavalete!
+        if max(alfa) > 15.5:
+            Rpx = Esl * cos(beta) + 4*FLFm*Tcg * cos(alfa) + ((CC1+CC2+CC3) + Pl + FLkgf + Pbola) * sin(teta_rad)
+            Rpy = (CC1+CC2+CC3+ Pl + FLkgf + Pbola) * cos(teta_rad) - Esl * sin(beta) - 4*FLFm*Tcg * sin(alfa)  
         Rp = (Rpx**2 + Rpy**2)**.5
         gama = abs(arctan(abs(Rpy)/abs(Rpx)) - teta_rad)
         #Cálculo do esforço de compressão aplicado sobre a lança
