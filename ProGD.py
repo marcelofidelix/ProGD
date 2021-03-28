@@ -164,7 +164,7 @@ app.layout = html.Div([
     dcc.Dropdown(
     id='combo_modelos',
     options=combo_modelos_valores,
-    value='American 5750R 90ft'
+    value='[UN-BC] American 5750R 90ft'
     ),
 
     ],style={'width': '45%', 'display': 'inline-block'}),
@@ -566,7 +566,10 @@ def mostra_modelo(
         
         #Parâmetros geométricos
         Dg = (H**2 + (V + G/2)**2)**.5
-        tetag = arctan((V + G/2) / H)
+        try:
+            tetag = arctan((V + G/2) / H)
+        except:
+            tetag = arctan((V + G/2) / 0.1)
         Lcg = (Dg**2 + L**2 - 2 * L * Dg * cos(pi - teta_rad - tetag))**.5
         alfa = arcsin((Dg * sin(pi - teta_rad - tetag)) / Lcg)
 
