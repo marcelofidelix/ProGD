@@ -633,10 +633,12 @@ def mostra_modelo(
         #Reações no pino do pé da lança
         Rpx = Esl * cos(beta) + Tcg * cos(alfa) + ((CC1+CC2+CC3) + Pl + FLkgf + Pbola) * sin(teta_rad)
         Rpy = (CC1+CC2+CC3+ Pl + FLkgf + Pbola) * cos(teta_rad) - Esl * sin(beta) - Tcg * sin(alfa)
+        
         #Gambiarra para considerar o Clarke Chapman, que possui roldanas para o moitão no cavalete!
-        if max(alfa) > 15.5:
+        if combo_modelos ==  "[UN-ES] Clarke Chapman HD 44.89m 20tf todos os ang.":
             Rpx = Esl * cos(beta) + 4*FLFm*Tcg * cos(alfa) + ((CC1+CC2+CC3) + Pl + FLkgf + Pbola) * sin(teta_rad)
             Rpy = (CC1+CC2+CC3+ Pl + FLkgf + Pbola) * cos(teta_rad) - Esl * sin(beta) - 4*FLFm*Tcg * sin(alfa)  
+        
         Rp = (Rpx**2 + Rpy**2)**.5
         gama = abs(arctan(abs(Rpy)/abs(Rpx)) - teta_rad)
         #Cálculo do esforço de compressão aplicado sobre a lança
@@ -948,7 +950,7 @@ def mostra_modelo(
         label_x = 'Carga no gancho (kgf)'
     
     df.loc[combo_modelos]['[Gráfico] Raio'] = ast.literal_eval(df.loc[combo_modelos]['teta'])
-
+    #pdb.set_trace()
     if combo_param[:9] == '[Gráfico]':
 
         if combo_param[len(combo_param)-5:] == 'Otim.':
